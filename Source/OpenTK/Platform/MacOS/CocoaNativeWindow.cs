@@ -131,7 +131,7 @@ namespace OpenTK.Platform.MacOS
         private bool disposed = false;
         private bool exists;
         private bool cursorVisible = true;
-        private System.Drawing.Icon icon;
+        private Icon icon;
         private WindowBorder windowBorder = WindowBorder.Resizable;
         private Nullable<WindowBorder> deferredWindowBorder;
         private Nullable<WindowBorder> previousWindowBorder;
@@ -179,7 +179,7 @@ namespace OpenTK.Platform.MacOS
                         Cocoa.SendIntPtr(Class.Get("NSScreen"), Selector.Get("screens")),
                         Selector.Get("objectAtIndex:"), 0),
                     Selector.Get("frame"));
-            var contentRect = new System.Drawing.RectangleF(x, screenRect.Height - height - y, width, height);
+            var contentRect = new RectangleF(x, screenRect.Height - height - y, width, height);
             var style = GetStyleMask(windowBorder);
             var bufferingType = NSBackingStore.Buffered;
 
@@ -606,7 +606,7 @@ namespace OpenTK.Platform.MacOS
             return new Point((int)r.X, (int)(GetCurrentScreenFrame().Height - r.Y));
         }
 
-        public override System.Drawing.Icon Icon
+        public override Icon Icon
         {
             get { return icon; }
             set
@@ -837,7 +837,7 @@ namespace OpenTK.Platform.MacOS
             }
         }
 
-        private System.Drawing.RectangleF InternalBounds
+        private RectangleF InternalBounds
         {
             get
             {

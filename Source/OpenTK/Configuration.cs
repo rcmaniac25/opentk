@@ -339,6 +339,7 @@ namespace OpenTK
 #elif BLACKBERRY
                     runningOnMono = true;
                     // Don't need to specify runningOnBlackBerry as the property is compile time
+                    initialized = true;
 #else
                     runningOnMono = DetectMono();
                     runningOnWindows = DetectWindows();

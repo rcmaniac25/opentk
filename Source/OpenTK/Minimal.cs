@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Text;
 
 #if IPHONE || ANDROID || BLACKBERRY || MINIMAL
@@ -70,6 +72,11 @@ namespace OpenTK
                 else
                     return TimeSpan.FromTicks(stop.Ticks - start.Ticks);
             }
+        }
+
+        public static Stopwatch StartNew()
+        {
+            return new Stopwatch();
         }
     }
 
@@ -371,6 +378,16 @@ namespace OpenTK
         public static bool operator !=(SizeF left, SizeF right)
         {
             return !left.Equals(right);
+        }
+
+        /// <summary>
+        /// Converts the specified Size structure to a SizeF structure.
+        /// </summary>
+        /// <param name="p">The Size structure to convert.</param>
+        /// <returns>The SizeF structure to which this operator converts.</returns>
+        public static implicit operator SizeF(Size p)
+        {
+            return new SizeF(p.Width, p.Height);
         }
 
         /// <summary>
@@ -704,6 +721,13 @@ namespace OpenTK
     public abstract class Image : IDisposable
     {
         public void Dispose() { }
+
+        public void Save(Stream stream, ImageFormat format) { }
+
+        public static int GetPixelFormatSize(PixelFormat pixfmt)
+        {
+            return 0;
+        }
     }
 
     #endregion
@@ -724,12 +748,23 @@ namespace OpenTK
             this.height = height;
         }
 
+        public Bitmap(int width, int height, int stride, PixelFormat format, IntPtr scan0)
+        {
+            this.width = width;
+            this.height = height;
+        }
+
         public int Width { get { return width; } }
         public int Height { get { return height; } }
 
         public Color GetPixel(int x, int y)
         {
             return new Color();
+        }
+
+        public IntPtr GetHicon()
+        {
+            return IntPtr.Zero;
         }
 
         internal void UnlockBits(BitmapData data)
@@ -1636,7 +1671,7 @@ namespace OpenTK
 
     #region PixelFormat
 
-    enum PixelFormat
+    public enum PixelFormat
     {
         Format32bppArgb
     }

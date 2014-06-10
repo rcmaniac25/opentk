@@ -136,6 +136,26 @@ namespace OpenTK
 
         #endregion 
 
+        #region public static bool RunningOnBlackBerry
+
+        /// <summary>
+        /// Gets a <c>System.Boolean</c> indicating whether
+        /// OpenTK is running on a BlackBerry device.
+        /// </summary>
+        public static bool RunningOnBlackBerry
+        {
+            get
+            {
+#if BLACKBERRY
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        #endregion 
+
         #region --- Private Methods ---
 
         #region private static string DetectUnixKernel()
@@ -316,6 +336,9 @@ namespace OpenTK
 #elif IPHONE
                     runningOnMono = true;
                     runningOnIOS = true;
+#elif BLACKBERRY
+                    runningOnMono = true;
+                    // Don't need to specify runningOnBlackBerry as the property is compile time
 #else
                     runningOnMono = DetectMono();
                     runningOnWindows = DetectWindows();
@@ -338,7 +361,7 @@ namespace OpenTK
 #endif
                     Debug.Print("Detected configuration: {0} / {1}",
                         RunningOnWindows ? "Windows" : RunningOnLinux ? "Linux" : RunningOnMacOS ? "MacOS" :
-                        runningOnUnix ? "Unix" : RunningOnX11 ? "X11" : "Unknown Platform",
+                        runningOnUnix ? "Unix" : RunningOnX11 ? "X11" : RunningOnBlackBerry ? "BlackBerry" : "Unknown Platform",
                         RunningOnMono ? "Mono" : ".Net");
                 }
             }

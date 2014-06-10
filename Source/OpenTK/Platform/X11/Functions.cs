@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-#if ANDROID || IPHONE || MINIMAL
+#if ANDROID || IPHONE || BLACKBERRY || MINIMAL
 using OpenTK.Minimal;
 #else
 using System.Drawing.Imaging;

@@ -3078,7 +3078,7 @@ namespace OpenTK.Platform.Windows
 
     #region Registry
 
-#if ANDROID || IPHONE || MINIMAL
+#if ANDROID || IPHONE || BLACKBERRY || MINIMAL
 
     internal class RegistryKey
     {

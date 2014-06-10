@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-#if IPHONE || ANDROID || MINIMAL
+#if IPHONE || ANDROID || BLACKBERRY || MINIMAL
 
 namespace OpenTK
 {

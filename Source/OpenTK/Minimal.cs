@@ -76,7 +76,9 @@ namespace OpenTK
 
         public static Stopwatch StartNew()
         {
-            return new Stopwatch();
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            return watch;
         }
     }
 
@@ -726,6 +728,13 @@ namespace OpenTK
 
         public static int GetPixelFormatSize(PixelFormat pixfmt)
         {
+            switch (pixfmt)
+            {
+                case PixelFormat.Format16bppRgb565:
+                    return 16;
+                case PixelFormat.Format32bppArgb:
+                    return 32;
+            }
             return 0;
         }
     }
@@ -1673,6 +1682,7 @@ namespace OpenTK
 
     public enum PixelFormat
     {
+        Format16bppRgb565,
         Format32bppArgb
     }
 

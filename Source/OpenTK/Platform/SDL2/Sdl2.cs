@@ -38,7 +38,7 @@ namespace OpenTK.Platform.SDL2
 
     partial class SDL
     {
-        #if ANDROID
+        #if ANDROID || BLACKBERRY
         const string lib = "libSDL2.so";
         #elif IPHONE
         const string lib = "__Internal";

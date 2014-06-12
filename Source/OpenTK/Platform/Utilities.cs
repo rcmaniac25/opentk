@@ -357,6 +357,20 @@ namespace OpenTK.Platform
 
         #endregion
 
+        #region CreateBlackBerryWindowInfo
+
+        /// <summary>
+        /// Creates an IWindowInfo instance for the BlackBerry platform.
+        /// </summary>
+        /// <param name="windowHandle">The handle of the window.</param>
+        /// <returns>A new IWindowInfo instance.</returns>
+        public static IWindowInfo CreateBlackBerryWindowInfo(IntPtr windowHandle)
+        {
+            return new OpenTK.Platform.BlackBerry.BlackBerryWindowInfo(windowHandle);
+        }
+
+        #endregion
+
         #endregion
 
         #region RelaxGraphicsMode

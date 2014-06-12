@@ -1,4 +1,32 @@
-﻿using System;
+﻿#region License
+//
+// The Open Toolkit Library License
+//
+// Copyright (c) 2006 - 2014 the Open Toolkit library.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights to 
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do
+// so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+//
+#endregion
+
+using System;
+using System.Runtime.InteropServices;
 
 using OpenTK.Graphics;
 using OpenTK.Input;
@@ -7,6 +35,16 @@ namespace OpenTK.Platform.BlackBerry
 {
     class BlackBerryFactory : PlatformFactoryBase
     {
+        internal static IntPtr InitialContext { get; private set; }
+
+        public BlackBerryFactory()
+        {
+            if ((InitialContext = Screen.CreateContext()) == IntPtr.Zero)
+            {
+                throw new ApplicationException("Could not create application's screen context. Returned -1");
+            }
+        }
+
         #region IPlatformFactory Members
 
         public override INativeWindow CreateNativeWindow(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)
@@ -29,8 +67,10 @@ namespace OpenTK.Platform.BlackBerry
 
         public override GraphicsContext.GetCurrentContextDelegate CreateGetCurrentGraphicsContext()
         {
-            //TODO
-            throw new NotImplementedException();
+            return (GraphicsContext.GetCurrentContextDelegate)delegate
+            {
+                return new ContextHandle(InitialContext);
+            };
         }
 
         public override IKeyboardDriver2 CreateKeyboardDriver()
@@ -45,6 +85,12 @@ namespace OpenTK.Platform.BlackBerry
             throw new NotImplementedException();
         }
 
+        public override IGamePadDriver CreateGamePadDriver()
+        {
+            //TODO
+            throw new NotImplementedException();
+        }
+
         public override IJoystickDriver2 CreateJoystickDriver()
         {
             //TODO
@@ -52,5 +98,21 @@ namespace OpenTK.Platform.BlackBerry
         }
 
         #endregion
+
+        protected override void Dispose(bool manual)
+        {
+            if (!IsDisposed)
+            {
+                if (manual)
+                {
+                    //TODO
+                }
+
+                Screen.DestroyContext(InitialContext);
+                InitialContext = IntPtr.Zero;
+
+                base.Dispose(manual);
+            }
+        }
     }
 }

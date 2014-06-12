@@ -162,8 +162,11 @@
     <Compile Include="Math\Matrix4x2d.cs" />
     <Compile Include="Math\Matrix4x3.cs" />
     <Compile Include="Math\Matrix4x3d.cs" />
+    <Compile Include="Platform\BlackBerry\Bindings\Screen.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryFactory.cs" />
+    <Compile Include="Platform\BlackBerry\BlackBerryWindowInfo.cs" />
     <Compile Include="Platform\DisplayDeviceBase.cs" />
+    <Compile Include="Platform\Egl\EglBlackBerryPlatformFactory.cs" />
     <Compile Include="Platform\Egl\EglUnixContext.cs" />
     <Compile Include="Platform\Egl\EglWinContext.cs" />
     <Compile Include="Platform\MappedGamePadDriver.cs" />

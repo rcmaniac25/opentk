@@ -55,8 +55,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public override IDisplayDeviceDriver CreateDisplayDeviceDriver()
         {
-            //TODO
-            throw new NotImplementedException();
+            return new BlackBerryDisplayDeviceDriver();
         }
 
         public override IGraphicsContext CreateGLContext(GraphicsMode mode, IWindowInfo window, IGraphicsContext shareContext, bool directRendering, int major, int minor, GraphicsContextFlags flags)

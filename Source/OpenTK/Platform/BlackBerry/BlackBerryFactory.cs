@@ -49,8 +49,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public override INativeWindow CreateNativeWindow(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)
         {
-            //TODO
-            throw new NotImplementedException();
+            return new BlackBerryGlNative(x, y, width, height, title, mode, options, device);
         }
 
         public override IDisplayDeviceDriver CreateDisplayDeviceDriver()
@@ -60,15 +59,23 @@ namespace OpenTK.Platform.BlackBerry
 
         public override IGraphicsContext CreateGLContext(GraphicsMode mode, IWindowInfo window, IGraphicsContext shareContext, bool directRendering, int major, int minor, GraphicsContextFlags flags)
         {
-            //TODO
-            throw new NotImplementedException();
+            BlackBerryWindowInfo bb_win = (BlackBerryWindowInfo)window;
+            Egl.EglWindowInfo egl_win = new OpenTK.Platform.Egl.EglWindowInfo(bb_win.Handle, Egl.Egl.GetDisplay(IntPtr.Zero));
+            return new Egl.EglUnixContext(mode, egl_win, shareContext, major, minor, flags);
+        }
+
+        public override IGraphicsContext CreateGLContext(ContextHandle handle, IWindowInfo window, IGraphicsContext shareContext, bool directRendering, int major, int minor, GraphicsContextFlags flags)
+        {
+            BlackBerryWindowInfo bb_win = (BlackBerryWindowInfo)window;
+            Egl.EglWindowInfo egl_win = new OpenTK.Platform.Egl.EglWindowInfo(bb_win.Handle, Egl.Egl.GetDisplay(IntPtr.Zero));
+            return new Egl.EglUnixContext(handle, egl_win, shareContext, major, minor, flags);
         }
 
         public override GraphicsContext.GetCurrentContextDelegate CreateGetCurrentGraphicsContext()
         {
             return (GraphicsContext.GetCurrentContextDelegate)delegate
             {
-                return new ContextHandle(InitialContext);
+                return new ContextHandle(Egl.Egl.GetCurrentContext());
             };
         }
 

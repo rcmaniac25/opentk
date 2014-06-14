@@ -190,7 +190,26 @@ namespace OpenTK.Platform.BlackBerry
         [DllImport(lib, EntryPoint = "screen_destroy_window")]
         public static extern int DestroyWindow(Window win);
 
-        //TODO
+        // -----------------
+
+        [DllImport(lib, EntryPoint = "screen_get_window_property_iv")]
+        public static extern int WindowGetInt(Display disp, int pname, out int param);
+
+        [DllImport(lib, EntryPoint = "screen_get_window_property_iv")]
+        public static extern int WindowGetInts(Display disp, int pname, [In, Out]ref int[] param);
+
+        // -----------------
+
+        [DllImport(lib, EntryPoint = "screen_set_window_property_iv")]
+        static extern int WindowSetInt(Display disp, int pname, [In] ref int param);
+
+        public static bool WindowSetInt(Display disp, int pname, int param)
+        {
+            return WindowSetInt(disp, pname, ref param) == SCREEN_SUCCESS;
+        }
+
+        [DllImport(lib, EntryPoint = "screen_set_window_property_iv")]
+        static extern int WindowSetInts(Display disp, int pname, [In] int[] param);
 
         #endregion
     }

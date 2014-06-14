@@ -74,7 +74,7 @@ namespace OpenTK.Platform
                 if (Configuration.RunningOnWindows) Embedded = new Egl.EglWinPlatformFactory();
                 else if (Configuration.RunningOnMacOS) Embedded = new Egl.EglMacPlatformFactory();
                 else if (Configuration.RunningOnX11) Embedded = new Egl.EglX11PlatformFactory();
-                else if (Configuration.RunningOnBlackBerry) Embedded = new Egl.EglBlackBerryPlatformFactory();
+                else if (Configuration.RunningOnBlackBerry) Embedded = Default; // BlackBerry only supports OpenGL, so it works on Embedded and "Desktop"
                 else Embedded = new UnsupportedPlatform();
             }
             else

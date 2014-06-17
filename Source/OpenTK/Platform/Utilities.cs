@@ -197,6 +197,10 @@ namespace OpenTK.Platform
             {
                 loader = Platform.MacOS.NS.GetAddress;
             }
+            else if (Configuration.RunningOnBlackBerry)
+            {
+                loader = Egl.Egl.GetProcAddress;
+            }
             else
             {
                 throw new PlatformNotSupportedException();

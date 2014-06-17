@@ -49,7 +49,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public override INativeWindow CreateNativeWindow(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)
         {
-            return new BlackBerryGlNative(x, y, width, height, title, mode, options, device);
+            return new BlackBerryGLNative(x, y, width, height, title, mode, options, device);
         }
 
         public override IDisplayDeviceDriver CreateDisplayDeviceDriver()
@@ -111,7 +111,7 @@ namespace OpenTK.Platform.BlackBerry
             {
                 if (manual)
                 {
-                    //TODO
+                    //TODO: input devices
                 }
 
                 Screen.DestroyContext(InitialContext);

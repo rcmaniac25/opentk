@@ -35,16 +35,27 @@ using OpenTK.Graphics;
 
 namespace OpenTK.Platform.BlackBerry
 {
-    internal sealed class BlackBerryGlNative : NativeWindowBase
+    internal sealed class BlackBerryGLNative : NativeWindowBase
     {
-        public BlackBerryGlNative(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)
+        bool disposed = false;
+
+        BlackBerryWindowInfo window;
+
+        public BlackBerryGLNative(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)
         {
             if (width <= 0)
                 throw new ArgumentOutOfRangeException("width", "Must be higher than zero.");
             if (height <= 0)
                 throw new ArgumentOutOfRangeException("height", "Must be higher than zero.");
 
-            //TODO
+            IntPtr windowHandle = Screen.CreateWindow(BlackBerryFactory.InitialContext);
+            if (windowHandle == IntPtr.Zero)
+            {
+                throw new ApplicationException("screen_create_window call failed (returned 0).");
+            }
+            window = new BlackBerryWindowInfo(windowHandle);
+
+            //TODO: completely ignore OpenGL, this is ONLY window
         }
 
         #region INativeWindow members
@@ -112,7 +123,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public override IWindowInfo WindowInfo
         {
-            get { throw new NotImplementedException(); }
+            get { return window; }
         }
 
         public override WindowState WindowState
@@ -189,9 +200,26 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
-        protected override void Dispose(bool disposing)
+        protected override void Dispose(bool manual)
         {
-            throw new NotImplementedException();
+            if (!disposed)
+            {
+                if (manual)
+                {
+                    if (window != null && window.Handle != IntPtr.Zero)
+                    {
+                        window.Dispose();
+                    }
+                    window = null;
+                }
+                else
+                {
+                    Debug.Print("[Warning] INativeWindow leaked ({0}). Did you forget to call INativeWindow.Dispose()?", this);
+                }
+
+                OnDisposed(EventArgs.Empty);
+                disposed = true;
+            }
         }
     }
 }

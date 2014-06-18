@@ -55,23 +55,79 @@ namespace OpenTK.Platform.BlackBerry
             }
             window = new BlackBerryWindowInfo(windowHandle);
 
-            //TODO: completely ignore OpenGL, this is ONLY window
+            // Set window properties
+            ColorFormat format = mode.ColorFormat;
+            PixelFormat screenFormat = PixelFormat.SCREEN_FORMAT_RGB565;
+            if (format.Alpha > 0 || format.Red > 5 || format.Green > 6 || format.Blue > 5)
+            {
+                screenFormat = PixelFormat.SCREEN_FORMAT_RGBA8888;
+            }
+            if (!Screen.WindowSetInt(windowHandle, Screen.SCREEN_PROPERTY_FORMAT, (int)screenFormat))
+            {
+                Debug.Print("Window format could not be set to {0}", screenFormat);
+            }
+            if (!Screen.WindowSetInt(windowHandle, Screen.SCREEN_PROPERTY_USAGE, Screen.SCREEN_USAGE_OPENGL_ES2)) //XXX Probably shouldn't hard code this...
+            {
+                Debug.Print("Window usage could not be set to OpenGL ES 2.0");
+            }
+            if (options == GameWindowFlags.FixedWindow)
+            {
+                if (x != 0 || y != 0)
+                {
+                    if (Screen.WindowSetInts(windowHandle, Screen.SCREEN_PROPERTY_POSITION, new int[] { x, y }) != Screen.SCREEN_SUCCESS)
+                    {
+                        Debug.Print("Window position could not be set to {0}x{1}", x, y);
+                    }
+                }
+                if (width != 0 || height != 0)
+                {
+                    if (Screen.WindowSetInts(windowHandle, Screen.SCREEN_PROPERTY_BUFFER_SIZE, new int[] { width, height }) != Screen.SCREEN_SUCCESS)
+                    {
+                        Debug.Print("Window buffer size could not be set to {0}x{1}", width, height);
+                    }
+                }
+            }
+            if (title != null)
+            {
+                if (!Screen.WindowSetString(windowHandle, Screen.SCREEN_PROPERTY_ID_STRING, title))
+                {
+                    Debug.Print("Window ID could not be set to \"{0}\"", title);
+                }
+            }
+            if (device != null)
+            {
+                if (!Screen.WindowSetIntPtr(windowHandle, Screen.SCREEN_PROPERTY_DISPLAY, (IntPtr)device.Id))
+                {
+                    Debug.Print("Window display could not be changed from default");
+                }
+            }
+            if (Screen.WindowCreateBuffers(windowHandle, mode.Buffers) != Screen.SCREEN_SUCCESS)
+            {
+                Debug.Print("Could not create {0} window buffers", mode.Buffers);
+                window.Dispose();
+                window = null;
+                throw new ApplicationException("screen_create_window_buffers failed to create buffers");
+            }
         }
 
         #region INativeWindow members
 
         public override void Close()
         {
+            //TODO
+            //navigator_close_window
             throw new NotImplementedException();
         }
 
         public override Point PointToClient(Point point)
         {
+            //TODO
             throw new NotImplementedException();
         }
 
         public override Point PointToScreen(Point point)
         {
+            //TODO
             throw new NotImplementedException();
         }
 
@@ -89,36 +145,59 @@ namespace OpenTK.Platform.BlackBerry
 
         public override string Title
         {
+            //XXX Doesn't change app title...
             get
             {
-                throw new NotImplementedException();
+                return Screen.WindowGetString(window.Handle, Screen.SCREEN_PROPERTY_ID_STRING);
             }
             set
             {
-                throw new NotImplementedException();
+                if (Title != value)
+                {
+                    if (Screen.WindowSetString(window.Handle, Screen.SCREEN_PROPERTY_ID_STRING, value))
+                    {
+                        OnTitleChanged(EventArgs.Empty);
+                    }
+                }
             }
         }
 
         public override bool Focused
         {
+            //TODO
             get { throw new NotImplementedException(); }
         }
 
         public override bool Visible
         {
+            //XXX this should probably be based on app visibility as opposed to simple window visibility
             get
             {
-                throw new NotImplementedException();
+                int res;
+                if (Screen.WindowGetInt(window.Handle, Screen.SCREEN_PROPERTY_VISIBLE, out res) == Screen.SCREEN_SUCCESS)
+                {
+                    return res == 1;
+                }
+                return false;
             }
             set
             {
-                throw new NotImplementedException();
+                if (Visible != value)
+                {
+                    if (Screen.WindowSetInt(window.Handle, Screen.SCREEN_PROPERTY_VISIBLE, value ? 1 : 0))
+                    {
+                        OnVisibleChanged(EventArgs.Empty);
+                    }
+                }
             }
         }
 
         public override bool Exists
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return window != null && window.Handle != IntPtr.Zero;
+            }
         }
 
         public override IWindowInfo WindowInfo
@@ -130,6 +209,7 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
+                //TODO: only use Fullscreen and Minimized. The others aren't applicable to mobile
                 throw new NotImplementedException();
             }
             set
@@ -140,9 +220,10 @@ namespace OpenTK.Platform.BlackBerry
 
         public override WindowBorder WindowBorder
         {
+            // Border can't be changed in terms of style
             get
             {
-                throw new NotImplementedException();
+                return OpenTK.WindowBorder.Hidden;
             }
             set
             {
@@ -152,6 +233,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public override Rectangle Bounds
         {
+            //TODO
             get
             {
                 throw new NotImplementedException();
@@ -162,8 +244,13 @@ namespace OpenTK.Platform.BlackBerry
             }
         }
 
+        //TODO: Location
+
+        //TODO: Size
+
         public override Size ClientSize
         {
+            //TODO
             get
             {
                 throw new NotImplementedException();
@@ -178,7 +265,7 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                throw new NotImplementedException();
+                return false;
             }
             set
             {
@@ -199,6 +286,8 @@ namespace OpenTK.Platform.BlackBerry
         }
 
         #endregion
+
+        //TODO: ProcessEvents
 
         protected override void Dispose(bool manual)
         {

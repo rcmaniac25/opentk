@@ -78,6 +78,15 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_SUCCESS = 0;
         public const int SCREEN_ERROR = -1;
 
+        public const int SCREEN_PROPERTY_BUFFER_SIZE = 5;
+        public const int SCREEN_PROPERTY_DISPLAY = 11;
+        public const int SCREEN_PROPERTY_FORMAT = 14;
+        public const int SCREEN_PROPERTY_ID_STRING = 20;
+        public const int SCREEN_PROPERTY_POSITION = 35;
+        public const int SCREEN_PROPERTY_ROTATION = 38;
+        public const int SCREEN_PROPERTY_TRANSPARENCY = 46;
+        public const int SCREEN_PROPERTY_USAGE = 48;
+        public const int SCREEN_PROPERTY_VISIBLE = 51;
         public const int SCREEN_PROPERTY_DISPLAY_COUNT = 59;
         public const int SCREEN_PROPERTY_DISPLAYS = 60;
         public const int SCREEN_PROPERTY_ATTACHED = 64;
@@ -87,6 +96,11 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_PROPERTY_MODE = 90;
 
         public const int SCREEN_MODE_PREFERRED_INDEX = -1;
+
+        public const int SCREEN_USAGE_DISPLAY = (1 << 0);
+        public const int SCREEN_USAGE_OPENGL_ES1 = (1 << 4);
+        public const int SCREEN_USAGE_OPENGL_ES2 = (1 << 5);
+        public const int SCREEN_USAGE_OPENGL_ES3 = (1 << 11);
 
         #region --- Context ---
 
@@ -190,26 +204,79 @@ namespace OpenTK.Platform.BlackBerry
         [DllImport(lib, EntryPoint = "screen_destroy_window")]
         public static extern int DestroyWindow(Window win);
 
+        [DllImport(lib, EntryPoint = "screen_create_window_group")]
+        public static extern int WindowCreateGroup(Window win, [MarshalAs(UnmanagedType.LPStr)]string name);
+
+        [DllImport(lib, EntryPoint = "screen_create_window_buffers")]
+        public static extern int WindowCreateBuffers(Window win, int count);
+
+        #region Strings
+
+        [DllImport(lib, EntryPoint = "screen_get_window_property_cv")]
+        static extern int WindowGetString(Window win, int pname, int len, System.Text.StringBuilder param);
+
+        public static string WindowGetString(Window win, int pname)
+        {
+            return WindowGetString(win, pname, 512);
+        }
+
+        public static string WindowGetString(Window win, int pname, int expectedMaxSize)
+        {
+            System.Text.StringBuilder bu = new System.Text.StringBuilder(expectedMaxSize);
+            if (WindowGetString(win, pname, bu.Capacity, bu) == SCREEN_SUCCESS)
+            {
+                return bu.ToString();
+            }
+            return null;
+        }
+
         // -----------------
 
-        [DllImport(lib, EntryPoint = "screen_get_window_property_iv")]
-        public static extern int WindowGetInt(Display disp, int pname, out int param);
+        [DllImport(lib, EntryPoint = "screen_set_window_property_cv")]
+        static extern int WindowSetString(Window win, int pname, int len, [MarshalAs(UnmanagedType.LPStr)]string param);
+
+        public static bool WindowSetString(Window win, int pname, string param)
+        {
+            int len = System.Text.Encoding.Default.GetByteCount(param);
+            return WindowSetString(win, pname, len, param) == SCREEN_SUCCESS;
+        }
+
+        #endregion
+
+        #region Int
 
         [DllImport(lib, EntryPoint = "screen_get_window_property_iv")]
-        public static extern int WindowGetInts(Display disp, int pname, [In, Out]ref int[] param);
+        public static extern int WindowGetInt(Window win, int pname, out int param);
+
+        [DllImport(lib, EntryPoint = "screen_get_window_property_iv")]
+        public static extern int WindowGetInts(Window win, int pname, [In, Out]ref int[] param);
 
         // -----------------
 
         [DllImport(lib, EntryPoint = "screen_set_window_property_iv")]
-        static extern int WindowSetInt(Display disp, int pname, [In] ref int param);
+        static extern int WindowSetInt(Window win, int pname, [In] ref int param);
 
-        public static bool WindowSetInt(Display disp, int pname, int param)
+        public static bool WindowSetInt(Window win, int pname, int param)
         {
-            return WindowSetInt(disp, pname, ref param) == SCREEN_SUCCESS;
+            return WindowSetInt(win, pname, ref param) == SCREEN_SUCCESS;
         }
 
         [DllImport(lib, EntryPoint = "screen_set_window_property_iv")]
-        static extern int WindowSetInts(Display disp, int pname, [In] int[] param);
+        public static extern int WindowSetInts(Window win, int pname, [In] int[] param);
+
+        #endregion
+
+        #region IntPtr
+
+        [DllImport(lib, EntryPoint = "screen_get_display_property_pv")]
+        static extern int WindowSetIntPtr(Window win, int pname, [In] ref IntPtr param);
+
+        public static bool WindowSetIntPtr(Window win, int pname, IntPtr param)
+        {
+            return WindowSetIntPtr(win, pname, ref param) == SCREEN_SUCCESS;
+        }
+
+        #endregion
 
         #endregion
     }

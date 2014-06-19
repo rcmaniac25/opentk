@@ -39,6 +39,9 @@ namespace OpenTK.Platform.BlackBerry
     {
         bool disposed = false;
 
+        DisplayDevice display;
+        Point screenLocation;
+        Size screenSize;
         BlackBerryWindowInfo window;
 
         public BlackBerryGLNative(int x, int y, int width, int height, string title, GraphicsMode mode, GameWindowFlags options, DisplayDevice device)
@@ -70,6 +73,8 @@ namespace OpenTK.Platform.BlackBerry
             {
                 Debug.Print("Window usage could not be set to OpenGL ES 2.0");
             }
+            screenLocation = Point.Empty;
+            screenSize = Size.Empty;
             if (options == GameWindowFlags.FixedWindow)
             {
                 if (x != 0 || y != 0)
@@ -78,12 +83,20 @@ namespace OpenTK.Platform.BlackBerry
                     {
                         Debug.Print("Window position could not be set to {0}x{1}", x, y);
                     }
+                    else
+                    {
+                        screenLocation = new Point(x, y);
+                    }
                 }
                 if (width != 0 || height != 0)
                 {
                     if (Screen.WindowSetInts(windowHandle, Screen.SCREEN_PROPERTY_BUFFER_SIZE, new int[] { width, height }) != Screen.SCREEN_SUCCESS)
                     {
                         Debug.Print("Window buffer size could not be set to {0}x{1}", width, height);
+                    }
+                    else
+                    {
+                        screenSize = new Size(width, height);
                     }
                 }
             }
@@ -94,6 +107,7 @@ namespace OpenTK.Platform.BlackBerry
                     Debug.Print("Window ID could not be set to \"{0}\"", title);
                 }
             }
+            display = device;
             if (device != null)
             {
                 if (!Screen.WindowSetIntPtr(windowHandle, Screen.SCREEN_PROPERTY_DISPLAY, (IntPtr)device.Id))
@@ -114,21 +128,38 @@ namespace OpenTK.Platform.BlackBerry
 
         public override void Close()
         {
-            //TODO
-            //navigator_close_window
-            throw new NotImplementedException();
+            System.ComponentModel.CancelEventArgs cancel = new System.ComponentModel.CancelEventArgs();
+            OnClosing(cancel);
+            if (!cancel.Cancel)
+            {
+                //TODO
+                //navigator_close_window
+                throw new NotImplementedException();
+            }
         }
 
         public override Point PointToClient(Point point)
         {
-            //TODO
-            throw new NotImplementedException();
+            // From Sdl2NativeWindow
+            var origin = Point.Empty;
+            if (display != null)
+            {
+                origin = display.Bounds.Location;
+            }
+            var client = Location;
+            return new Point(point.X + client.X - origin.X, point.Y + client.Y - origin.Y);
         }
 
         public override Point PointToScreen(Point point)
         {
-            //TODO
-            throw new NotImplementedException();
+            // From Sdl2NativeWindow
+            var origin = Point.Empty;
+            if (display != null)
+            {
+                origin = display.Bounds.Location;
+            }
+            var client = Location;
+            return new Point(point.X + origin.X - client.X, point.Y + origin.Y - client.Y);
         }
 
         public override Icon Icon
@@ -233,31 +264,65 @@ namespace OpenTK.Platform.BlackBerry
 
         public override Rectangle Bounds
         {
-            //TODO
             get
             {
-                throw new NotImplementedException();
+                return new Rectangle(Location, Size);
             }
             set
             {
-                throw new NotImplementedException();
+                Location = value.Location;
+                Size = value.Size;
             }
         }
 
-        //TODO: Location
-
-        //TODO: Size
-
-        public override Size ClientSize
+        public override Point Location
         {
-            //TODO
             get
             {
-                throw new NotImplementedException();
+                return screenLocation;
             }
             set
             {
-                throw new NotImplementedException();
+                if (screenLocation != value)
+                {
+                    if (Screen.WindowSetInts(window.Handle, Screen.SCREEN_PROPERTY_POSITION, new int[] { value.X, value.Y }) == Screen.SCREEN_SUCCESS)
+                    {
+                        // Update's on redraw
+                        screenLocation = value;
+                    }
+                }
+            }
+        }
+
+        public override Size Size
+        {
+            // Internal (client) and external (size) sizes are the same as there are no borders.
+            get
+            {
+                return ClientSize;
+            }
+            set
+            {
+                ClientSize = value;
+            }
+        }
+
+        public override Size ClientSize
+        {
+            get
+            {
+                return screenSize;
+            }
+            set
+            {
+                if (screenSize != value)
+                {
+                    if (Screen.WindowSetInts(window.Handle, Screen.SCREEN_PROPERTY_BUFFER_SIZE, new int[] { value.Width, value.Height }) == Screen.SCREEN_SUCCESS)
+                    {
+                        // Update's on redraw
+                        screenSize = value;
+                    }
+                }
             }
         }
 
@@ -287,7 +352,14 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
-        //TODO: ProcessEvents
+        #region ProcessEvents
+
+        public override void ProcessEvents()
+        {
+            //TODO
+        }
+
+        #endregion
 
         protected override void Dispose(bool manual)
         {

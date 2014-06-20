@@ -162,7 +162,9 @@
     <Compile Include="Math\Matrix4x2d.cs" />
     <Compile Include="Math\Matrix4x3.cs" />
     <Compile Include="Math\Matrix4x3d.cs" />
+    <Compile Include="Platform\BlackBerry\Bindings\BPS.cs" />
     <Compile Include="Platform\BlackBerry\Bindings\Screen.cs" />
+    <Compile Include="Platform\BlackBerry\Bindings\Slog2.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryDisplayDeviceDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryFactory.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryGLNative.cs" />

@@ -39,6 +39,8 @@ namespace OpenTK.Platform.BlackBerry
     {
         bool disposed = false;
 
+        bool isClosing = false;
+        bool focused = true; // On creation, there is a high chance the app is focused
         DisplayDevice display;
         Point screenLocation;
         Size screenSize;
@@ -88,17 +90,14 @@ namespace OpenTK.Platform.BlackBerry
                         screenLocation = new Point(x, y);
                     }
                 }
-                if (width != 0 || height != 0)
-                {
-                    if (Screen.WindowSetInts(windowHandle, Screen.SCREEN_PROPERTY_BUFFER_SIZE, new int[] { width, height }) != Screen.SCREEN_SUCCESS)
-                    {
-                        Debug.Print("Window buffer size could not be set to {0}x{1}", width, height);
-                    }
-                    else
-                    {
-                        screenSize = new Size(width, height);
-                    }
-                }
+            }
+            if (Screen.WindowSetInts(windowHandle, Screen.SCREEN_PROPERTY_BUFFER_SIZE, new int[] { width, height }) != Screen.SCREEN_SUCCESS)
+            {
+                Debug.Print("Window buffer size could not be set to {0}x{1}", width, height);
+            }
+            else
+            {
+                screenSize = new Size(width, height);
             }
             if (title != null)
             {
@@ -128,13 +127,9 @@ namespace OpenTK.Platform.BlackBerry
 
         public override void Close()
         {
-            System.ComponentModel.CancelEventArgs cancel = new System.ComponentModel.CancelEventArgs();
-            OnClosing(cancel);
-            if (!cancel.Cancel)
+            if (Exists && !isClosing)
             {
-                //TODO
-                //navigator_close_window
-                throw new NotImplementedException();
+                BPS.NavigatorRequestExit();
             }
         }
 
@@ -195,8 +190,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public override bool Focused
         {
-            //TODO
-            get { throw new NotImplementedException(); }
+            get { return focused; }
         }
 
         public override bool Visible
@@ -240,8 +234,8 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                //TODO: only use Fullscreen and Minimized. The others aren't applicable to mobile
-                throw new NotImplementedException();
+                // Other states aren't applicable to mobile
+                return focused ? WindowState.Fullscreen : WindowState.Minimized;
             }
             set
             {
@@ -352,12 +346,29 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
+        #region Internal members
+
+        private void DestroyWindow()
+        {
+            if (window != null && window.Handle != IntPtr.Zero)
+            {
+                window.Dispose();
+            }
+            window = null;
+        }
+
         #region ProcessEvents
 
         public override void ProcessEvents()
         {
-            //TODO
+            IntPtr ev;
+            while (BPS.GetEvent(out ev, 1) == BPS.BPS_SUCCESS && ev != IntPtr.Zero)
+            {
+                //TODO
+            }
         }
+
+        #endregion
 
         #endregion
 
@@ -367,11 +378,7 @@ namespace OpenTK.Platform.BlackBerry
             {
                 if (manual)
                 {
-                    if (window != null && window.Handle != IntPtr.Zero)
-                    {
-                        window.Dispose();
-                    }
-                    window = null;
+                    DestroyWindow();
                 }
                 else
                 {

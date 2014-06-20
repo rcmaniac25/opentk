@@ -13,6 +13,8 @@ namespace OpenTK
     // minimal targets (e.g. MonoTouch).
     // Note: the "overriden" classes must not be fully qualified for this to work!
 
+#if !BLACKBERRY
+
     // System.Diagnostics.Debug
     static class Debug
     {
@@ -38,6 +40,8 @@ namespace OpenTK
         public static void Unindent() { }
         public static void Flush() { }
     }
+
+#endif
 
     // System.Diagnostics.Stopwatch
     sealed class Stopwatch

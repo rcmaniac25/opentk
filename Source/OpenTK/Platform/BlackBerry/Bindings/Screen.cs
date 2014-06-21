@@ -33,6 +33,7 @@ namespace OpenTK.Platform.BlackBerry
     using Context = IntPtr;
     using Display = IntPtr;
     using Window = IntPtr;
+    using Event = IntPtr;
 
     [StructLayout(LayoutKind.Sequential, Size = 56)]
     struct DisplayMode
@@ -82,9 +83,16 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_PROPERTY_DISPLAY = 11;
         public const int SCREEN_PROPERTY_FORMAT = 14;
         public const int SCREEN_PROPERTY_ID_STRING = 20;
+        public const int SCREEN_PROPERTY_FLAGS = 25;
+        public const int SCREEN_PROPERTY_KEY_FLAGS = SCREEN_PROPERTY_FLAGS;
+        public const int SCREEN_PROPERTY_MODIFIERS = 26;
+        public const int SCREEN_PROPERTY_KEY_MODIFIERS = SCREEN_PROPERTY_MODIFIERS;
+        public const int SCREEN_PROPERTY_SYM = 28;
+        public const int SCREEN_PROPERTY_KEY_SYM = SCREEN_PROPERTY_SYM;
         public const int SCREEN_PROPERTY_POSITION = 35;
         public const int SCREEN_PROPERTY_ROTATION = 38;
         public const int SCREEN_PROPERTY_TRANSPARENCY = 46;
+        public const int SCREEN_PROPERTY_TYPE = 47;
         public const int SCREEN_PROPERTY_USAGE = 48;
         public const int SCREEN_PROPERTY_VISIBLE = 51;
         public const int SCREEN_PROPERTY_DISPLAY_COUNT = 59;
@@ -101,6 +109,8 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_USAGE_OPENGL_ES1 = (1 << 4);
         public const int SCREEN_USAGE_OPENGL_ES2 = (1 << 5);
         public const int SCREEN_USAGE_OPENGL_ES3 = (1 << 11);
+
+        public const int SCREEN_EVENT_KEYBOARD = 7;
 
         #region --- Context ---
 
@@ -277,6 +287,16 @@ namespace OpenTK.Platform.BlackBerry
         }
 
         #endregion
+
+        #endregion
+
+        #region --- Event ---
+
+        [DllImport(lib, EntryPoint = "screen_get_event_property_iv")]
+        public static extern int EventGetInt(Event ev, int pname, out int param);
+
+        [DllImport(lib, EntryPoint = "screen_get_event_property_iv")]
+        public static extern int EventGetInts(Event ev, int pname, [In, Out]ref int[] param);
 
         #endregion
     }

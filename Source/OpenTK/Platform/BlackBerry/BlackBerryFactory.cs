@@ -50,6 +50,8 @@ namespace OpenTK
                     BPS.Shutdown();
                     throw new ApplicationException("Could not create application's screen context. Returned -1");
                 }
+                // Prevent rotation of app
+                BPS.LockRotation(true);
             }
 
             #region IPlatformFactory Members

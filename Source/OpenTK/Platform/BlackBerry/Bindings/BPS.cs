@@ -32,6 +32,13 @@ namespace OpenTK.Platform.BlackBerry
 {
     using Event = IntPtr;
 
+    enum NavigatorWindowState : int
+    {
+        Fullscreen = 0,
+        Thumbnail = 1,
+        Invisible = 2
+    }
+
     class BPS
     {
         const string lib = "libbps";
@@ -64,6 +71,11 @@ namespace OpenTK.Platform.BlackBerry
 
         #region --- Navigator ---
 
+        public const int NAVIGATOR_EXIT = 0x02;
+        public const int NAVIGATOR_WINDOW_STATE = 0x03;
+        public const int NAVIGATOR_WINDOW_ACTIVE = 0x0a;
+        public const int NAVIGATOR_WINDOW_INACTIVE = 0x0b;
+
         [DllImport(lib, EntryPoint = "navigator_request_events")]
         static extern int NavigatorRequestEvents(int flags);
 
@@ -85,6 +97,12 @@ namespace OpenTK.Platform.BlackBerry
 
         [DllImport(lib, EntryPoint = "navigator_close_window")]
         public static extern int NavigatorRequestExit();
+
+        [DllImport(lib, EntryPoint = "navigator_rotation_lock")]
+        public static extern int LockRotation(bool locked);
+
+        [DllImport(lib, EntryPoint = "navigator_event_get_window_state")]
+        public static extern NavigatorWindowState NavigatorEventWindowState(Event ev);
 
         //TODO
 

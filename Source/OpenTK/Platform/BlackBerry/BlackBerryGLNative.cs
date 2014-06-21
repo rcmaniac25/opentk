@@ -40,7 +40,9 @@ namespace OpenTK.Platform.BlackBerry
         bool disposed = false;
 
         bool isClosing = false;
-        bool focused = true; // On creation, there is a high chance the app is focused
+        bool focused = true;
+        bool active = true;
+        bool visible = true;
         DisplayDevice display;
         Point screenLocation;
         Size screenSize;
@@ -121,6 +123,10 @@ namespace OpenTK.Platform.BlackBerry
                 window = null;
                 throw new ApplicationException("screen_create_window_buffers failed to create buffers");
             }
+
+            // Startup events
+            BPS.NavigatorRequestEvents();
+            BPS.ScreenRequestEvents(BlackBerryFactory.InitialContext);
         }
 
         #region INativeWindow members
@@ -190,30 +196,19 @@ namespace OpenTK.Platform.BlackBerry
 
         public override bool Focused
         {
-            get { return focused; }
+            get { return active && focused; }
         }
 
         public override bool Visible
         {
-            //XXX this should probably be based on app visibility as opposed to simple window visibility
             get
             {
-                int res;
-                if (Screen.WindowGetInt(window.Handle, Screen.SCREEN_PROPERTY_VISIBLE, out res) == Screen.SCREEN_SUCCESS)
-                {
-                    return res == 1;
-                }
-                return false;
+                return visible;
             }
             set
             {
-                if (Visible != value)
-                {
-                    if (Screen.WindowSetInt(window.Handle, Screen.SCREEN_PROPERTY_VISIBLE, value ? 1 : 0))
-                    {
-                        OnVisibleChanged(EventArgs.Empty);
-                    }
-                }
+                // If this was Cascades, then we could at least thumbnail it. But that doesn't make it invisible.
+                throw new NotImplementedException();
             }
         }
 
@@ -234,8 +229,7 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                // Other states aren't applicable to mobile
-                return focused ? WindowState.Fullscreen : WindowState.Minimized;
+                return visible ? focused ? WindowState.Fullscreen : WindowState.Normal : WindowState.Minimized;
             }
             set
             {
@@ -283,6 +277,7 @@ namespace OpenTK.Platform.BlackBerry
                     {
                         // Update's on redraw
                         screenLocation = value;
+                        OnMove(EventArgs.Empty);
                     }
                 }
             }
@@ -315,6 +310,7 @@ namespace OpenTK.Platform.BlackBerry
                     {
                         // Update's on redraw
                         screenSize = value;
+                        OnResize(EventArgs.Empty);
                     }
                 }
             }
@@ -352,6 +348,9 @@ namespace OpenTK.Platform.BlackBerry
         {
             if (window != null && window.Handle != IntPtr.Zero)
             {
+                BPS.ScreenStopEvents(BlackBerryFactory.InitialContext);
+                BPS.NavigatorStopEvents();
+
                 window.Dispose();
             }
             window = null;
@@ -361,10 +360,111 @@ namespace OpenTK.Platform.BlackBerry
 
         public override void ProcessEvents()
         {
+            base.ProcessEvents();
+
             IntPtr ev;
             while (BPS.GetEvent(out ev, 1) == BPS.BPS_SUCCESS && ev != IntPtr.Zero)
             {
-                //TODO
+                int domain = BPS.GetDomain(ev);
+                if (domain == BPS.ScreenGetDomain())
+                {
+                    int type;
+                    IntPtr screenEvent = BPS.ScreenGetEvent(ev);
+                    Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TYPE, out type);
+                    switch (type)
+                    {
+                        case Screen.SCREEN_EVENT_KEYBOARD:
+                            int flags;
+                            int value;
+                            //int mod;
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_FLAGS, out flags);
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_SYM, out value);
+                            //Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_MODIFIERS, out mod);
+                            Input.Key key = BlackBerryKeyMap.GetKey(value);
+                            if ((flags & KeyConst.KEY_DOWN) != 0)
+                            {
+                                OnKeyDown(key, (flags & KeyConst.KEY_REPEAT) != 0);
+                                if ((flags & KeyConst.KEY_SYM_VALID) != 0)
+                                {
+                                    OnKeyPress(BlackBerryKeyMap.GetAscii(value));
+                                }
+                            }
+                            else
+                            {
+                                OnKeyUp(key);
+                            }
+                            break;
+                        //TODO: mouse, touch
+                    }
+                }
+                else if (domain == BPS.NavigatorGetDomain())
+                {
+                    uint code = BPS.GetCode(ev);
+                    switch (code)
+                    {
+                        case BPS.NAVIGATOR_EXIT:
+                            System.ComponentModel.CancelEventArgs close = new System.ComponentModel.CancelEventArgs();
+                            try
+                            {
+                                isClosing = true;
+                                OnClosing(close);
+                            }
+                            finally
+                            {
+                                isClosing = false;
+                            }
+
+                            if (!close.Cancel)
+                            {
+                                OnClosed(EventArgs.Empty);
+                                DestroyWindow();
+                            }
+                            break;
+
+                        case BPS.NAVIGATOR_WINDOW_STATE:
+                            WindowState oldState = this.WindowState;
+                            bool oldFocus = this.Focused;
+                            bool oldVisible = this.Visible;
+                            switch (BPS.NavigatorEventWindowState(ev))
+                            {
+                                case NavigatorWindowState.Fullscreen:
+                                    visible = true;
+                                    focused = true;
+                                    break;
+                                case NavigatorWindowState.Thumbnail:
+                                    visible = true;
+                                    focused = false;
+                                    break;
+                                case NavigatorWindowState.Invisible:
+                                    visible = false;
+                                    focused = false;
+                                    break;
+                            }
+                            if (this.WindowState != oldState)
+                            {
+                                OnWindowStateChanged(EventArgs.Empty);
+                            }
+                            if (this.Focused != oldFocus)
+                            {
+                                OnFocusedChanged(EventArgs.Empty);
+                            }
+                            if (this.Visible != oldVisible)
+                            {
+                                OnVisibleChanged(EventArgs.Empty);
+                            }
+                            break;
+
+                        case BPS.NAVIGATOR_WINDOW_ACTIVE:
+                        case BPS.NAVIGATOR_WINDOW_INACTIVE:
+                            oldFocus = this.Focused;
+                            active = code == BPS.NAVIGATOR_WINDOW_ACTIVE;
+                            if (this.Focused != oldFocus)
+                            {
+                                OnFocusedChanged(EventArgs.Empty);
+                            }
+                            break;
+                    }
+                }
             }
         }
 

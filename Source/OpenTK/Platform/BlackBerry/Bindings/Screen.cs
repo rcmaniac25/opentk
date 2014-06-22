@@ -72,6 +72,39 @@ namespace OpenTK.Platform.BlackBerry
         SCREEN_FORMAT_AYUV = 18
     }
 
+    [Flags]
+    enum MouseButton : int
+    {
+        SCREEN_LEFT_MOUSE_BUTTON = (1 << 0),
+        SCREEN_MIDDLE_MOUSE_BUTTON = (1 << 1),
+        SCREEN_RIGHT_MOUSE_BUTTON = (1 << 2)
+    }
+
+    [Flags]
+    enum GamepadButtons : int
+    {
+        SCREEN_A_GAME_BUTTON = (1 << 0),
+        SCREEN_B_GAME_BUTTON = (1 << 1),
+        SCREEN_C_GAME_BUTTON = (1 << 2),
+        SCREEN_X_GAME_BUTTON = (1 << 3),
+        SCREEN_Y_GAME_BUTTON = (1 << 4),
+        SCREEN_Z_GAME_BUTTON = (1 << 5),
+        SCREEN_MENU1_GAME_BUTTON = (1 << 6),
+        SCREEN_MENU2_GAME_BUTTON = (1 << 7),
+        SCREEN_MENU3_GAME_BUTTON = (1 << 8),
+        SCREEN_MENU4_GAME_BUTTON = (1 << 9),
+        SCREEN_L1_GAME_BUTTON = (1 << 10),
+        SCREEN_L2_GAME_BUTTON = (1 << 11),
+        SCREEN_L3_GAME_BUTTON = (1 << 12),
+        SCREEN_R1_GAME_BUTTON = (1 << 13),
+        SCREEN_R2_GAME_BUTTON = (1 << 14),
+        SCREEN_R3_GAME_BUTTON = (1 << 15),
+        SCREEN_DPAD_UP_GAME_BUTTON = (1 << 16),
+        SCREEN_DPAD_DOWN_GAME_BUTTON = (1 << 17),
+        SCREEN_DPAD_LEFT_GAME_BUTTON = (1 << 18),
+        SCREEN_DPAD_RIGHT_GAME_BUTTON = (1 << 19)
+    }
+
     class Screen
     {
         const string lib = "libscreen";
@@ -80,6 +113,7 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_ERROR = -1;
 
         public const int SCREEN_PROPERTY_BUFFER_SIZE = 5;
+        public const int SCREEN_PROPERTY_BUTTONS = 6;
         public const int SCREEN_PROPERTY_DISPLAY = 11;
         public const int SCREEN_PROPERTY_FORMAT = 14;
         public const int SCREEN_PROPERTY_ID_STRING = 20;
@@ -91,6 +125,7 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_PROPERTY_KEY_SYM = SCREEN_PROPERTY_SYM;
         public const int SCREEN_PROPERTY_POSITION = 35;
         public const int SCREEN_PROPERTY_ROTATION = 38;
+        public const int SCREEN_PROPERTY_SOURCE_POSITION = 41;
         public const int SCREEN_PROPERTY_TRANSPARENCY = 46;
         public const int SCREEN_PROPERTY_TYPE = 47;
         public const int SCREEN_PROPERTY_USAGE = 48;
@@ -100,8 +135,11 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_PROPERTY_ATTACHED = 64;
         public const int SCREEN_PROPERTY_FORMAT_COUNT = 70;
         public const int SCREEN_PROPERTY_FORMATS = 71;
+        public const int SCREEN_PROPERTY_TOUCH_ID = 73;
         public const int SCREEN_PROPERTY_MODE_COUNT = 89;
         public const int SCREEN_PROPERTY_MODE = 90;
+        public const int SCREEN_PROPERTY_MOUSE_WHEEL = 94;
+        public const int SCREEN_PROPERTY_MOUSE_HORIZONTAL_WHEEL = 111;
 
         public const int SCREEN_MODE_PREFERRED_INDEX = -1;
 
@@ -110,7 +148,11 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_USAGE_OPENGL_ES2 = (1 << 5);
         public const int SCREEN_USAGE_OPENGL_ES3 = (1 << 11);
 
+        public const int SCREEN_EVENT_POINTER = 6;
         public const int SCREEN_EVENT_KEYBOARD = 7;
+        public const int SCREEN_EVENT_MTOUCH_TOUCH = 100;
+        public const int SCREEN_EVENT_MTOUCH_MOVE = 101;
+        public const int SCREEN_EVENT_MTOUCH_RELEASE = 102;
 
         #region --- Context ---
 

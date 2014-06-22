@@ -373,13 +373,17 @@ namespace OpenTK.Platform.BlackBerry
                     Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TYPE, out type);
                     switch (type)
                     {
+                        #region Keyboard
+
                         case Screen.SCREEN_EVENT_KEYBOARD:
                             int flags;
                             int value;
-                            //int mod;
+                            int mod;
                             Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_FLAGS, out flags);
                             Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_SYM, out value);
-                            //Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_MODIFIERS, out mod);
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_KEY_MODIFIERS, out mod);
+
+                            UpdateModifierFlags(BlackBerryKeyMap.GetModifiers(mod));
                             Input.Key key = BlackBerryKeyMap.GetKey(value);
                             if ((flags & KeyConst.KEY_DOWN) != 0)
                             {
@@ -394,7 +398,101 @@ namespace OpenTK.Platform.BlackBerry
                                 OnKeyUp(key);
                             }
                             break;
-                        //TODO: mouse, touch
+
+                        #endregion
+
+                        #region Mouse
+
+                        case Screen.SCREEN_EVENT_POINTER:
+                            int[] position = new int[2];
+                            int[] wheel = new int[2];
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_BUTTONS, out value);
+                            Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_MOUSE_HORIZONTAL_WHEEL, out wheel[0]);
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_MOUSE_WHEEL, out wheel[1]);
+
+                            MouseButton buttons = (MouseButton)value;
+                            if ((buttons & MouseButton.SCREEN_LEFT_MOUSE_BUTTON) == MouseButton.SCREEN_LEFT_MOUSE_BUTTON && MouseState.IsButtonUp(Input.MouseButton.Left))
+                            {
+                                OnMouseDown(Input.MouseButton.Left);
+                            }
+                            else if (MouseState.IsButtonDown(Input.MouseButton.Left))
+                            {
+                                OnMouseUp(Input.MouseButton.Left);
+                            }
+                            if ((buttons & MouseButton.SCREEN_RIGHT_MOUSE_BUTTON) == MouseButton.SCREEN_RIGHT_MOUSE_BUTTON && MouseState.IsButtonUp(Input.MouseButton.Right))
+                            {
+                                OnMouseDown(Input.MouseButton.Right);
+                            }
+                            else if (MouseState.IsButtonDown(Input.MouseButton.Right))
+                            {
+                                OnMouseUp(Input.MouseButton.Right);
+                            }
+                            if ((buttons & MouseButton.SCREEN_MIDDLE_MOUSE_BUTTON) == MouseButton.SCREEN_MIDDLE_MOUSE_BUTTON && MouseState.IsButtonUp(Input.MouseButton.Middle))
+                            {
+                                OnMouseDown(Input.MouseButton.Middle);
+                            }
+                            else if (MouseState.IsButtonDown(Input.MouseButton.Middle))
+                            {
+                                OnMouseUp(Input.MouseButton.Middle);
+                            }
+                            if (MouseState.X != position[0] || MouseState.Y != position[1])
+                            {
+                                OnMouseMove(position[0], position[1]);
+                            }
+                            if (MouseState.Scroll.X != wheel[0] || MouseState.Scroll.Y != wheel[1])
+                            {
+                                OnMouseWheel(wheel[0] - MouseState.Scroll.X, wheel[1] - MouseState.Scroll.Y);
+                            }
+                            break;
+
+                        #endregion
+
+                        #region Touch
+
+                        case Screen.SCREEN_EVENT_MTOUCH_TOUCH:
+                            int id;
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TOUCH_ID, out id);
+                            if (id == 0)
+                            {
+                                position = new int[2];
+                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                                if (MouseState.X != position[0] || MouseState.Y != position[1])
+                                {
+                                    OnMouseMove(position[0], position[1]);
+                                }
+                                OnMouseDown(Input.MouseButton.Left);
+                            }
+                            break;
+
+                        case Screen.SCREEN_EVENT_MTOUCH_MOVE:
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TOUCH_ID, out id);
+                            if (id == 0)
+                            {
+                                position = new int[2];
+                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                                if (MouseState.X != position[0] || MouseState.Y != position[1])
+                                {
+                                    OnMouseMove(position[0], position[1]);
+                                }
+                            }
+                            break;
+
+                        case Screen.SCREEN_EVENT_MTOUCH_RELEASE:
+                            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TOUCH_ID, out id);
+                            if (id == 0)
+                            {
+                                position = new int[2];
+                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                                if (MouseState.X != position[0] || MouseState.Y != position[1])
+                                {
+                                    OnMouseMove(position[0], position[1]);
+                                }
+                                OnMouseUp(Input.MouseButton.Left);
+                            }
+                            break;
+
+                        #endregion
                     }
                 }
                 else if (domain == BPS.NavigatorGetDomain())

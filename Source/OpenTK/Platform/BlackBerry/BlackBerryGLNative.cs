@@ -55,9 +55,10 @@ namespace OpenTK.Platform.BlackBerry
             if (height <= 0)
                 throw new ArgumentOutOfRangeException("height", "Must be higher than zero.");
 
-            IntPtr windowHandle = Screen.CreateWindow(BlackBerryFactory.InitialContext);
+            IntPtr windowHandle = Screen.CreateWindow(BlackBerryFactory.RequestContext());
             if (windowHandle == IntPtr.Zero)
             {
+                BlackBerryFactory.ReleaseContext();
                 throw new ApplicationException("screen_create_window call failed (returned 0).");
             }
             window = new BlackBerryWindowInfo(windowHandle);
@@ -121,12 +122,13 @@ namespace OpenTK.Platform.BlackBerry
                 Debug.Print("Could not create {0} window buffers", mode.Buffers);
                 window.Dispose();
                 window = null;
+                BlackBerryFactory.ReleaseContext();
                 throw new ApplicationException("screen_create_window_buffers failed to create buffers");
             }
 
             // Startup events
             BPS.NavigatorRequestEvents();
-            BPS.ScreenRequestEvents(BlackBerryFactory.InitialContext);
+            BlackBerryFactory.RequestScreenEvents();
         }
 
         #region INativeWindow members
@@ -348,10 +350,12 @@ namespace OpenTK.Platform.BlackBerry
         {
             if (window != null && window.Handle != IntPtr.Zero)
             {
-                BPS.ScreenStopEvents(BlackBerryFactory.InitialContext);
+                BlackBerryFactory.StopScreenEvents();
                 BPS.NavigatorStopEvents();
 
                 window.Dispose();
+
+                BlackBerryFactory.ReleaseContext();
             }
             window = null;
         }

@@ -37,7 +37,53 @@ namespace OpenTK
     {
         class BlackBerryFactory : PlatformFactoryBase
         {
+            IInputDriver2 inputDriver = null;
+
+            #region Context
+
+            static int contextUsage = 0;
+            static int inputEventsRequested = 0;
+
             internal static IntPtr InitialContext { get; private set; }
+
+            public static IntPtr RequestContext()
+            {
+                contextUsage++;
+                return InitialContext;
+            }
+
+            public static void ReleaseContext()
+            {
+                contextUsage--;
+                if (contextUsage < 0)
+                {
+                    Debug.Print("Context has been released more times then it's been used");
+                }
+            }
+
+            public static bool RequestScreenEvents()
+            {
+                if ((inputEventsRequested++) == 1)
+                {
+                    return BPS.ScreenRequestEvents(InitialContext) == BPS.BPS_SUCCESS;
+                }
+                return true;
+            }
+
+            public static bool StopScreenEvents()
+            {
+                if ((inputEventsRequested--) == 1)
+                {
+                    return BPS.ScreenStopEvents(InitialContext) == BPS.BPS_SUCCESS;
+                }
+                if (inputEventsRequested < 0)
+                {
+                    Debug.Print("Screen events has been stopped more times then started");
+                }
+                return true;
+            }
+
+            #endregion
 
             public BlackBerryFactory()
             {
@@ -52,6 +98,7 @@ namespace OpenTK
                 }
                 // Prevent rotation of app
                 BPS.LockRotation(true);
+                contextUsage = 0;
             }
 
             #region IPlatformFactory Members
@@ -90,29 +137,37 @@ namespace OpenTK
 
             public override IKeyboardDriver2 CreateKeyboardDriver()
             {
-                //TODO
-                throw new NotImplementedException();
+                return InputDriver.KeyboardDriver;
             }
 
             public override IMouseDriver2 CreateMouseDriver()
             {
-                //TODO
-                throw new NotImplementedException();
+                return InputDriver.MouseDriver;
             }
 
             public override IGamePadDriver CreateGamePadDriver()
             {
-                //TODO
-                throw new NotImplementedException();
+                return InputDriver.GamePadDriver;
             }
 
             public override IJoystickDriver2 CreateJoystickDriver()
             {
-                //TODO
-                throw new NotImplementedException();
+                return InputDriver.JoystickDriver;
             }
 
             #endregion
+
+            IInputDriver2 InputDriver
+            {
+                get
+                {
+                    if (inputDriver == null)
+                    {
+                        inputDriver = new BlackBerryInputDriver();
+                    }
+                    return inputDriver;
+                }
+            }
 
             protected override void Dispose(bool manual)
             {
@@ -120,7 +175,21 @@ namespace OpenTK
                 {
                     if (manual)
                     {
-                        //TODO: input devices
+                        if (inputDriver != null)
+                        {
+                            inputDriver.Dispose();
+                            inputDriver = null;
+                        }
+                    }
+
+                    if (inputEventsRequested > 0)
+                    {
+                        BPS.ScreenStopEvents(InitialContext);
+                    }
+
+                    if (contextUsage > 0)
+                    {
+                        Debug.Print("Context is still in use");
                     }
 
                     Screen.DestroyContext(InitialContext);

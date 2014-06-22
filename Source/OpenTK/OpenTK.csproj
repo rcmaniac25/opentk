@@ -167,8 +167,11 @@
     <Compile Include="Platform\BlackBerry\Bindings\Slog2.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryDisplayDeviceDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryFactory.cs" />
+    <Compile Include="Platform\BlackBerry\BlackBerryGamePadDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryGLNative.cs" />
+    <Compile Include="Platform\BlackBerry\BlackBerryInputDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryKeyMap.cs" />
+    <Compile Include="Platform\BlackBerry\BlackBerryIPollingInputDriverBase.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryWindowInfo.cs" />
     <Compile Include="Platform\DisplayDeviceBase.cs" />
     <Compile Include="Platform\Egl\EglUnixContext.cs" />

@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 namespace OpenTK.Platform.BlackBerry
 {
     using Context = IntPtr;
+    using Device = IntPtr;
     using Display = IntPtr;
     using Window = IntPtr;
     using Event = IntPtr;
@@ -139,7 +140,14 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_PROPERTY_MODE_COUNT = 89;
         public const int SCREEN_PROPERTY_MODE = 90;
         public const int SCREEN_PROPERTY_MOUSE_WHEEL = 94;
+        public const int SCREEN_PROPERTY_DEVICE_COUNT = 98;
+        public const int SCREEN_PROPERTY_DEVICES = 101;
         public const int SCREEN_PROPERTY_MOUSE_HORIZONTAL_WHEEL = 111;
+        public const int SCREEN_PROPERTY_BUTTON_COUNT = 118;
+        public const int SCREEN_PROPERTY_VENDOR = 119;
+        public const int SCREEN_PROPERTY_PRODUCT = 120;
+        public const int SCREEN_PROPERTY_ANALOG0 = 123;
+        public const int SCREEN_PROPERTY_ANALOG1 = 124;
 
         public const int SCREEN_MODE_PREFERRED_INDEX = -1;
 
@@ -150,6 +158,8 @@ namespace OpenTK.Platform.BlackBerry
 
         public const int SCREEN_EVENT_POINTER = 6;
         public const int SCREEN_EVENT_KEYBOARD = 7;
+        public const int SCREEN_EVENT_GAMEPAD = 14;
+        public const int SCREEN_EVENT_JOYSTICK = 15;
         public const int SCREEN_EVENT_MTOUCH_TOUCH = 100;
         public const int SCREEN_EVENT_MTOUCH_MOVE = 101;
         public const int SCREEN_EVENT_MTOUCH_RELEASE = 102;
@@ -181,6 +191,34 @@ namespace OpenTK.Platform.BlackBerry
         public static extern int ContextGetIntPtr(Context ctx, int pname, [In, Out]ref IntPtr[] param);
 
         //TODO
+
+        #endregion
+
+        #region --- Device ---
+
+        [DllImport(lib, EntryPoint = "screen_get_device_property_iv")]
+        public static extern int DeviceGetInt(Device dev, int pname, out int param);
+
+        [DllImport(lib, EntryPoint = "screen_get_device_property_iv")]
+        public static extern int DeviceGetInts(Device dev, int pname, [In, Out]ref int[] param);
+
+        [DllImport(lib, EntryPoint = "screen_get_device_property_cv")]
+        static extern int DeviceGetString(Device dev, int pname, int len, System.Text.StringBuilder param);
+
+        public static string DeviceGetString(Device dev, int pname)
+        {
+            return DeviceGetString(dev, pname, 512);
+        }
+
+        public static string DeviceGetString(Device dev, int pname, int expectedMaxSize)
+        {
+            System.Text.StringBuilder bu = new System.Text.StringBuilder(expectedMaxSize);
+            if (DeviceGetString(dev, pname, bu.Capacity, bu) == SCREEN_SUCCESS)
+            {
+                return bu.ToString();
+            }
+            return null;
+        }
 
         #endregion
 

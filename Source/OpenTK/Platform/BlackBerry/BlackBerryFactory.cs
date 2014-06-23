@@ -35,9 +35,13 @@ namespace OpenTK
 {
     namespace Platform.BlackBerry
     {
+        //XXX
+        // Spaghetti code when it comes to input. InputDriver handles all input. But gets it through Factory. GLNative generates input events using Factory, 
+        // which passes them to InputDriver. Throw on top a bunch of reference counting, and it doesn't look pretty. Cleanup...
+
         class BlackBerryFactory : PlatformFactoryBase
         {
-            IInputDriver2 inputDriver = null;
+            static BlackBerryInputDriver inputDriver = null;
 
             #region Context
 
@@ -45,6 +49,13 @@ namespace OpenTK
             static int inputEventsRequested = 0;
 
             internal static IntPtr InitialContext { get; private set; }
+            internal static bool ScreenEventsEnabled
+            {
+                get
+                {
+                    return inputEventsRequested > 0;
+                }
+            }
 
             public static IntPtr RequestContext()
             {
@@ -157,6 +168,8 @@ namespace OpenTK
 
             #endregion
 
+            #region Input
+
             IInputDriver2 InputDriver
             {
                 get
@@ -168,6 +181,27 @@ namespace OpenTK
                     return inputDriver;
                 }
             }
+
+            internal static IntPtr PollEvent()
+            {
+                if (contextUsage > 0)
+                {
+                    IntPtr ev = IntPtr.Zero;
+                    if (BPS.GetEvent(out ev, 1) == BPS.BPS_SUCCESS && ev != IntPtr.Zero && 
+                        inputEventsRequested > 0 && inputDriver != null)
+                    {
+                        int domain = BPS.GetDomain(ev);
+                        if (domain == BPS.ScreenGetDomain())
+                        {
+                            inputDriver.HandleScreenEvents(BPS.ScreenGetEvent(ev));
+                        }
+                    }
+                    return ev;
+                }
+                return IntPtr.Zero;
+            }
+
+            #endregion
 
             protected override void Dispose(bool manual)
             {

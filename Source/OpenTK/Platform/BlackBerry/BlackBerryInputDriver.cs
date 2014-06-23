@@ -35,6 +35,8 @@ namespace OpenTK.Platform.BlackBerry
 {
     class BlackBerryInputDriver : IInputDriver2
     {
+        readonly object sync = new object();
+
         public const double POLL_RATE = 16.6; //~60 FPS
 
         bool disposed = false;
@@ -84,6 +86,14 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
+        internal void HandleScreenEvents(IntPtr screenEvent)
+        {
+            lock (sync)
+            {
+                //TODO
+            }
+        }
+
         #region Private members
 
         private void InitPollTimer()
@@ -128,11 +138,13 @@ namespace OpenTK.Platform.BlackBerry
 
                 if (manual)
                 {
+                    /*
                     if (gamepadDriver != null)
                     {
                         gamepadDriver.Dispose();
                         gamepadDriver = null;
                     }
+                     */
                     //TODO
                 }
 

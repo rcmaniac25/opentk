@@ -367,7 +367,7 @@ namespace OpenTK.Platform.BlackBerry
             base.ProcessEvents();
 
             IntPtr ev;
-            while (BPS.GetEvent(out ev, 1) == BPS.BPS_SUCCESS && ev != IntPtr.Zero)
+            while ((ev = BlackBerryFactory.PollEvent()) != IntPtr.Zero)
             {
                 int domain = BPS.GetDomain(ev);
                 if (domain == BPS.ScreenGetDomain())

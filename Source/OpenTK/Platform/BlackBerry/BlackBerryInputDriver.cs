@@ -42,7 +42,7 @@ namespace OpenTK.Platform.BlackBerry
         bool disposed = false;
         Timer timer = null;
 
-        BlackBerryGamePadDriver gamepadDriver = null;
+        BlackBerryGamePadDriver gamepadJoystickDriver = null;
 
         public BlackBerryInputDriver()
         {
@@ -67,21 +67,18 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                if (!disposed && gamepadDriver == null)
-                {
-                    BlackBerryGamePadDriver driver = new BlackBerryGamePadDriver();
-                    driver.InitialPoll();
-                    InitPollTimer();
-                    gamepadDriver = driver;
-                }
-                return gamepadDriver;
+                SetupGamepadJoystickDriver();
+                return gamepadJoystickDriver;
             }
         }
 
         public IJoystickDriver2 JoystickDriver
         {
-            //Pollable
-            get { throw new NotImplementedException(); }
+            get
+            {
+                SetupGamepadJoystickDriver();
+                return gamepadJoystickDriver;
+            }
         }
 
         #endregion
@@ -106,20 +103,38 @@ namespace OpenTK.Platform.BlackBerry
             }
         }
 
+        private void SetupGamepadJoystickDriver()
+        {
+            lock (sync)
+            {
+                if (!disposed && gamepadJoystickDriver == null)
+                {
+                    BlackBerryGamePadDriver driver = new BlackBerryGamePadDriver();
+                    driver.InitialPoll();
+                    InitPollTimer();
+                    gamepadJoystickDriver = driver;
+                }
+            }
+        }
+
         private void PollDrivers(object state)
         {
-            if (gamepadDriver != null)
+            BlackBerryGamePadDriver gamepadJoyDriver;
+            lock (sync)
+            {
+                gamepadJoyDriver = gamepadJoystickDriver;
+            }
+            if (gamepadJoyDriver != null)
             {
                 try
                 {
-                    gamepadDriver.Poll();
+                    gamepadJoyDriver.Poll();
                 }
                 catch (Exception ex)
                 {
                     Debug.Print("BlackBerry Gamepad polling threw exception: {0}", ex);
                 }
             }
-            //TODO
         }
 
         #endregion
@@ -138,13 +153,6 @@ namespace OpenTK.Platform.BlackBerry
 
                 if (manual)
                 {
-                    /*
-                    if (gamepadDriver != null)
-                    {
-                        gamepadDriver.Dispose();
-                        gamepadDriver = null;
-                    }
-                     */
                     //TODO
                 }
 

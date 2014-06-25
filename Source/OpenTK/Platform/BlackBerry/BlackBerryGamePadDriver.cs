@@ -32,7 +32,7 @@ using OpenTK.Input;
 
 namespace OpenTK.Platform.BlackBerry
 {
-    class BlackBerryGamePadDriver : BlackBerryIPollingInputDriverBase, IGamePadDriver
+    class BlackBerryGamePadDriver : IGamePadDriver, IJoystickDriver2
     {
         #region Known gamepads
 
@@ -77,6 +77,40 @@ namespace OpenTK.Platform.BlackBerry
             knownGamepads.Add(new KnownGamepad(0x1689, 0xFD01, "Razer", "Sabertooth", true, true));
         }
 
+        private static int AddKnownGamepad(int vid, int did, string vendor, string name, bool analog)
+        {
+            for (int i = 0; i < knownGamepads.Count; i++)
+            {
+                if (knownGamepads[i].VID == vid && knownGamepads[i].DID == did)
+                {
+                    Debug.Print("Attempted to add a known gamepad");
+                    return i;
+                }
+            }
+            knownGamepads.Add(new KnownGamepad(vid, did, vendor, name, analog, false));
+            Debug.Print("Adding new gamepad: {0}-{1}, ({2}, {3}), HasAnalog: {4}", vid, did, vendor, name, analog);
+            return knownGamepads.Count - 1;
+        }
+
+        private static bool IsRealKnownGamepad(int index)
+        {
+            return index < 9;
+        }
+
+        private static void UpdateKnownGamepad(int index, bool analog)
+        {
+            if (IsRealKnownGamepad(index))
+            {
+                Debug.Print("Attempted to change an \"actual\" known gamepad");
+                return;
+            }
+            if (!knownGamepads[index].HasAnalogTriggers && analog)
+            {
+                Debug.Print("Updating gamepad {0}-{1} with analog trigger", knownGamepads[index].DID, knownGamepads[index].VID);
+                knownGamepads[index].HasAnalogTriggers |= analog;
+            }
+        }
+
         #endregion
 
         class GamepadDevice
@@ -97,6 +131,7 @@ namespace OpenTK.Platform.BlackBerry
         readonly object sync = new object();
         int packet_id;
         readonly IList<GamepadDevice> gamepads = new List<GamepadDevice>(4);
+        readonly IList<GamepadDevice> joysticks = new List<GamepadDevice>(4);
 
         public BlackBerryGamePadDriver()
         {
@@ -175,7 +210,63 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
+        #region IJoystickDriver2
+
+        JoystickState IJoystickDriver2.GetState(int index)
+        {
+            JoystickState state = new JoystickState();
+            lock (sync)
+            {
+                if (index >= 0 && index < joysticks.Count)
+                {
+                    GamepadDevice device = joysticks[index];
+                    state.SetIsConnected(true);
+                    state.SetPacketNumber(packet_id);
+
+                    TranslateJoystickButtons(device.Buttons, device.ButtonCount, ref state);
+
+                    if (device.AnalogCount > 0)
+                    {
+                        state.SetAxis(JoystickAxis.Axis0, (short)(device.Analog0[0] * 128));
+                        state.SetAxis(JoystickAxis.Axis1, (short)(device.Analog0[1] * 128));
+                    }
+                }
+            }
+            return state;
+        }
+
+        JoystickCapabilities IJoystickDriver2.GetCapabilities(int index)
+        {
+            lock (sync)
+            {
+                if (index >= 0 && index < joysticks.Count)
+                {
+                    GamepadDevice device = joysticks[index];
+                    return new JoystickCapabilities(device.AnalogCount > 0 ? 2 : 0, device.ButtonCount, 0, true);
+                }
+            }
+            return new JoystickCapabilities();
+        }
+
+        public Guid GetGuid(int index)
+        {
+            lock (sync)
+            {
+                if (index >= 0 && index < joysticks.Count)
+                {
+                    return new Guid(joysticks[index].Id);
+                }
+            }
+            return Guid.Empty;
+        }
+
+        #endregion
+
         #region Private members
+
+        #region Buttons/Joysticks
+
+        #region Gamepad
 
         private Buttons TranslateButtons(GamepadButtons buttons)
         {
@@ -324,18 +415,44 @@ namespace OpenTK.Platform.BlackBerry
             return but;
         }
 
-        private int AddGamePad(IntPtr gamepad)
+        #endregion
+
+        #region Joystick
+
+        private void TranslateJoystickButtons(GamepadButtons buttons, int count, ref JoystickState state)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                GamepadButtons buttonTest = (GamepadButtons)(1 << i);
+                state.SetButton((JoystickButton)i, (buttons & buttonTest) == buttonTest);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Devices
+
+        private GamepadDevice GenerateDevice(IntPtr handle)
         {
             GamepadDevice device = new GamepadDevice();
-            device.Handle = gamepad;
-            device.Id = Screen.DeviceGetString(gamepad, Screen.SCREEN_PROPERTY_ID_STRING, 64);
-            device.Product = Screen.DeviceGetString(gamepad, Screen.SCREEN_PROPERTY_PRODUCT);
-            Screen.DeviceGetInt(gamepad, Screen.SCREEN_PROPERTY_BUTTON_COUNT, out device.ButtonCount);
+            device.Handle = handle;
+            device.Id = Screen.DeviceGetString(handle, Screen.SCREEN_PROPERTY_ID_STRING, 64);
+            device.Product = Screen.DeviceGetString(handle, Screen.SCREEN_PROPERTY_PRODUCT);
+            Screen.DeviceGetInt(handle, Screen.SCREEN_PROPERTY_BUTTON_COUNT, out device.ButtonCount);
+
+            return device;
+        }
+
+        private int AddGamePad(IntPtr gamepad)
+        {
+            GamepadDevice device = GenerateDevice(gamepad);
 
             string tmp = device.Id.Substring(device.Id.IndexOf('-') + 1);
-            int vid = int.Parse(tmp.Substring(0, tmp.IndexOf('-')));
+            int vid = int.Parse(tmp.Substring(0, tmp.IndexOf('-')), System.Globalization.NumberStyles.HexNumber);
             tmp = tmp.Substring(tmp.IndexOf('-') + 1);
-            int did = int.Parse(tmp.Substring(0, tmp.IndexOf('-')));
+            int did = int.Parse(tmp.Substring(0, tmp.IndexOf('-')), System.Globalization.NumberStyles.HexNumber);
             for (int i = 0; i < knownGamepads.Count; i++)
             {
                 if (knownGamepads[i].VID == vid && knownGamepads[i].DID == did)
@@ -344,17 +461,46 @@ namespace OpenTK.Platform.BlackBerry
                     break;
                 }
             }
+            if (device.KnownInfo < 0)
+            {
+                device.KnownInfo = AddKnownGamepad(vid, did, Screen.DeviceGetString(gamepad, Screen.SCREEN_PROPERTY_VENDOR), device.Product, false);
+            }
 
             gamepads.Add(device);
 
-            return UpdateGamePad(gamepad, gamepads.Count - 1, true);
+            return UpdateGamepadJoystick(gamepad, gamepads.Count - 1, true, false, gamepads); // Use false for "isGamepad" so it doesn't change anything at this point
         }
 
-        private int UpdateGamePad(IntPtr gamepad, int knownIndex, bool updateAnalogCount)
+        private int AddJoystick(IntPtr joystick)
         {
-            for (int i = 0; knownIndex < 0 && i < gamepads.Count; i++)
+            GamepadDevice device = GenerateDevice(joystick);
+
+            // Attempt to parse Guid
+            Guid guid;
+            try
             {
-                if (gamepads[i].Handle == gamepad)
+                guid = new Guid(device.Id);
+            }
+            catch
+            {
+                string tmp = device.Id.Substring(device.Id.IndexOf('-') + 1);
+                ushort vid = ushort.Parse(tmp.Substring(0, tmp.IndexOf('-')), System.Globalization.NumberStyles.HexNumber);
+                tmp = tmp.Substring(tmp.IndexOf('-') + 1);
+                ushort did = ushort.Parse(tmp.Substring(0, tmp.IndexOf('-')), System.Globalization.NumberStyles.HexNumber);
+                guid = new Guid(0, vid, did, 0, 0, 0, 0, 0, 0, 0, 0);
+            }
+            device.Id = guid.ToString();
+
+            joysticks.Add(device);
+
+            return UpdateGamepadJoystick(joystick, joysticks.Count - 1, true, false, joysticks);
+        }
+
+        private int UpdateGamepadJoystick(IntPtr gamepad, int knownIndex, bool updateAnalogCount, bool isGamepad, IList<GamepadDevice> devices)
+        {
+            for (int i = 0; knownIndex < 0 && i < devices.Count; i++)
+            {
+                if (devices[i].Handle == gamepad)
                 {
                     knownIndex = i;
                 }
@@ -365,7 +511,7 @@ namespace OpenTK.Platform.BlackBerry
                 return knownIndex;
             }
 
-            GamepadDevice device = gamepads[knownIndex];
+            GamepadDevice device = devices[knownIndex];
 
             int buttons;
             Screen.DeviceGetInt(gamepad, Screen.SCREEN_PROPERTY_BUTTONS, out buttons);
@@ -378,12 +524,19 @@ namespace OpenTK.Platform.BlackBerry
             {
                 device.AnalogCount++;
             }
+            if (isGamepad && device.KnownInfo >= 0 && device.AnalogCount > 0 && 
+                !IsRealKnownGamepad(device.KnownInfo) && !knownGamepads[device.KnownInfo].HasAnalogTriggers)
+            {
+                // Might want to update gamepad info
+                bool hasAnalogTriggers = device.Analog0[2] != 0 || (device.AnalogCount > 1 ? device.Analog1[2] != 0 : false);
+                UpdateKnownGamepad(device.KnownInfo, hasAnalogTriggers);
+            }
             return knownIndex;
         }
 
         #endregion
 
-        #region BlackBerryIPollingInputDriverBase members
+        #region Polling
 
         public void InitialPoll()
         {
@@ -396,6 +549,7 @@ namespace OpenTK.Platform.BlackBerry
 
                 packet_id = 0;
                 gamepads.Clear();
+                joysticks.Clear();
                 foreach (IntPtr device in devices)
                 {
                     int type;
@@ -404,6 +558,10 @@ namespace OpenTK.Platform.BlackBerry
                     if (type == Screen.SCREEN_EVENT_GAMEPAD)
                     {
                         AddGamePad(device);
+                    }
+                    else if (type == Screen.SCREEN_EVENT_JOYSTICK)
+                    {
+                        AddJoystick(device);
                     }
                 }
             }
@@ -420,6 +578,7 @@ namespace OpenTK.Platform.BlackBerry
 
                 packet_id++;
                 List<int> processedGamepads = new List<int>(gamepads.Count);
+                List<int> processedJoysticks = new List<int>(joysticks.Count);
                 foreach (IntPtr device in devices)
                 {
                     int type;
@@ -427,7 +586,7 @@ namespace OpenTK.Platform.BlackBerry
 
                     if (type == Screen.SCREEN_EVENT_GAMEPAD)
                     {
-                        int index = UpdateGamePad(device, -1, false);
+                        int index = UpdateGamepadJoystick(device, -1, false, true, gamepads);
                         if (index < 0)
                         {
                             processedGamepads.Add(AddGamePad(device));
@@ -435,6 +594,18 @@ namespace OpenTK.Platform.BlackBerry
                         else
                         {
                             processedGamepads.Add(index);
+                        }
+                    }
+                    else if (type == Screen.SCREEN_EVENT_JOYSTICK)
+                    {
+                        int index = UpdateGamepadJoystick(device, -1, false, false, joysticks);
+                        if (index < 0)
+                        {
+                            processedJoysticks.Add(AddJoystick(device));
+                        }
+                        else
+                        {
+                            processedJoysticks.Add(index);
                         }
                     }
                 }
@@ -448,8 +619,20 @@ namespace OpenTK.Platform.BlackBerry
                         }
                     }
                 }
+                if (processedJoysticks.Count != joysticks.Count)
+                {
+                    for (int i = joysticks.Count - 1; i >= 0; i--)
+                    {
+                        if (!processedJoysticks.Contains(i))
+                        {
+                            joysticks.RemoveAt(i);
+                        }
+                    }
+                }
             }
         }
+
+        #endregion
 
         #endregion
     }

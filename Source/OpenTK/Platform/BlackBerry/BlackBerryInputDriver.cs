@@ -42,6 +42,8 @@ namespace OpenTK.Platform.BlackBerry
         bool disposed = false;
         Timer timer = null;
 
+        readonly BlackBerryMouseDriver mouseDriver = new BlackBerryMouseDriver();
+        readonly BlackBerryKeyboardDriver keyboardDriver = new BlackBerryKeyboardDriver();
         BlackBerryGamePadDriver gamepadJoystickDriver = null;
 
         public BlackBerryInputDriver()
@@ -53,14 +55,18 @@ namespace OpenTK.Platform.BlackBerry
 
         public IMouseDriver2 MouseDriver
         {
-            //Need screen
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return mouseDriver;
+            }
         }
 
         public IKeyboardDriver2 KeyboardDriver
         {
-            //Need screen
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return keyboardDriver;
+            }
         }
 
         public IGamePadDriver GamePadDriver
@@ -85,9 +91,36 @@ namespace OpenTK.Platform.BlackBerry
 
         internal void HandleScreenEvents(IntPtr screenEvent)
         {
-            lock (sync)
+            int type;
+            Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TYPE, out type);
+            switch (type)
             {
-                //TODO
+                case Screen.SCREEN_EVENT_POINTER:
+                case Screen.SCREEN_EVENT_MTOUCH_PRETOUCH:
+                case Screen.SCREEN_EVENT_MTOUCH_TOUCH:
+                case Screen.SCREEN_EVENT_MTOUCH_MOVE:
+                case Screen.SCREEN_EVENT_MTOUCH_RELEASE:
+                    mouseDriver.ProcessEvent(screenEvent, type == Screen.SCREEN_EVENT_POINTER);
+                    break;
+                case Screen.SCREEN_EVENT_KEYBOARD:
+                    keyboardDriver.ProcessEvent(screenEvent);
+                    break;
+                case Screen.SCREEN_EVENT_DEVICE:
+                    int attached;
+                    IntPtr device;
+                    Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_ATTACHED, out attached);
+                    Screen.EventGetIntPtr(screenEvent, Screen.SCREEN_PROPERTY_DEVICE, out device);
+                    if (!mouseDriver.HandleDeviceConnection(device, attached == 1))
+                    {
+                        if (!keyboardDriver.HandleDeviceConnection(device, attached == 1))
+                        {
+                            if (!gamepadJoystickDriver.HandleDeviceConnection(device, attached == 1))
+                            {
+                                Debug.Print("No input handler is handling a device event.");
+                            }
+                        }
+                    }
+                    break;
             }
         }
 

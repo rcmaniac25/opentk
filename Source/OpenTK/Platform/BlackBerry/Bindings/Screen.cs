@@ -115,6 +115,7 @@ namespace OpenTK.Platform.BlackBerry
 
         public const int SCREEN_PROPERTY_BUFFER_SIZE = 5;
         public const int SCREEN_PROPERTY_BUTTONS = 6;
+        public const int SCREEN_PROPERTY_DEVICE = 10;
         public const int SCREEN_PROPERTY_DISPLAY = 11;
         public const int SCREEN_PROPERTY_FORMAT = 14;
         public const int SCREEN_PROPERTY_ID_STRING = 20;
@@ -160,6 +161,8 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_EVENT_KEYBOARD = 7;
         public const int SCREEN_EVENT_GAMEPAD = 14;
         public const int SCREEN_EVENT_JOYSTICK = 15;
+        public const int SCREEN_EVENT_DEVICE = 16;
+        public const int SCREEN_EVENT_MTOUCH_PRETOUCH = 99;
         public const int SCREEN_EVENT_MTOUCH_TOUCH = 100;
         public const int SCREEN_EVENT_MTOUCH_MOVE = 101;
         public const int SCREEN_EVENT_MTOUCH_RELEASE = 102;
@@ -377,6 +380,9 @@ namespace OpenTK.Platform.BlackBerry
 
         [DllImport(lib, EntryPoint = "screen_get_event_property_iv")]
         public static extern int EventGetInts(Event ev, int pname, [In, Out]ref int[] param);
+
+        [DllImport(lib, EntryPoint = "screen_get_event_property_pv")]
+        public static extern int EventGetIntPtr(Event ev, int pname, out IntPtr param);
 
         #endregion
     }

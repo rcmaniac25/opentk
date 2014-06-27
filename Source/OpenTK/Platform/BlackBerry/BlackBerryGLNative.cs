@@ -394,7 +394,11 @@ namespace OpenTK.Platform.BlackBerry
                                 OnKeyDown(key, (flags & KeyConst.KEY_REPEAT) != 0);
                                 if ((flags & KeyConst.KEY_SYM_VALID) != 0)
                                 {
-                                    OnKeyPress(BlackBerryKeyMap.GetAscii(value));
+                                    char ascii = BlackBerryKeyMap.GetAscii(value);
+                                    if (!char.IsControl(ascii))
+                                    {
+                                        OnKeyPress(ascii);
+                                    }
                                 }
                             }
                             else
@@ -459,6 +463,8 @@ namespace OpenTK.Platform.BlackBerry
                             Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_TOUCH_ID, out id);
                             if (id == 0)
                             {
+                                OnMouseEnter(EventArgs.Empty);
+
                                 position = new int[2];
                                 Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
                                 if (MouseState.X != position[0] || MouseState.Y != position[1])
@@ -493,6 +499,7 @@ namespace OpenTK.Platform.BlackBerry
                                     OnMouseMove(position[0], position[1]);
                                 }
                                 OnMouseUp(Input.MouseButton.Left);
+                                OnMouseLeave(EventArgs.Empty);
                             }
                             break;
 

@@ -141,9 +141,9 @@ namespace OpenTK.Platform.BlackBerry
 
         public GamePadState GetState(int index)
         {
+            GamePadState state = new GamePadState();
             lock (sync)
             {
-                GamePadState state = new GamePadState();
                 if (index >= 0 && index < gamepads.Count)
                 {
                     GamepadDevice device = gamepads[index];
@@ -170,8 +170,8 @@ namespace OpenTK.Platform.BlackBerry
                         state.SetAxis(GamePadAxes.RightY, (short)(device.Analog1[1] * 128));
                     }
                 }
-                return state;
             }
+            return state;
         }
 
         public GamePadCapabilities GetCapabilities(int index)
@@ -187,8 +187,8 @@ namespace OpenTK.Platform.BlackBerry
                         GenerateButtons(device.ButtonCount, device.AnalogCount, hasAnalogTriggers),
                         true);
                 }
-                return new GamePadCapabilities();
             }
+            return new GamePadCapabilities();
         }
 
         public string GetName(int index)
@@ -199,8 +199,8 @@ namespace OpenTK.Platform.BlackBerry
                 {
                     return gamepads[index].Product;
                 }
-                return string.Empty;
             }
+            return string.Empty;
         }
 
         public bool SetVibration(int index, float left, float right)
@@ -421,7 +421,7 @@ namespace OpenTK.Platform.BlackBerry
 
         private void TranslateJoystickButtons(GamepadButtons buttons, int count, ref JoystickState state)
         {
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < count; i++) // XXX Is this correct? Would think that button count wouldn't be 1 << i and instead would need to go through every button.
             {
                 GamepadButtons buttonTest = (GamepadButtons)(1 << i);
                 state.SetButton((JoystickButton)i, (buttons & buttonTest) == buttonTest);
@@ -496,15 +496,20 @@ namespace OpenTK.Platform.BlackBerry
             return UpdateGamepadJoystick(joystick, joysticks.Count - 1, true, false, joysticks);
         }
 
-        private int UpdateGamepadJoystick(IntPtr gamepad, int knownIndex, bool updateAnalogCount, bool isGamepad, IList<GamepadDevice> devices)
+        private void IndexOfDevice(IntPtr device, ref int knownIndex, IList<GamepadDevice> devices)
         {
             for (int i = 0; knownIndex < 0 && i < devices.Count; i++)
             {
-                if (devices[i].Handle == gamepad)
+                if (devices[i].Handle == device)
                 {
                     knownIndex = i;
                 }
             }
+        }
+
+        private int UpdateGamepadJoystick(IntPtr gamepad, int knownIndex, bool updateAnalogCount, bool isGamepad, IList<GamepadDevice> devices)
+        {
+            IndexOfDevice(gamepad, ref knownIndex, devices);
 
             if (knownIndex < 0)
             {
@@ -536,9 +541,9 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
-        #region Polling
+        #region Polling/Events
 
-        public void InitialPoll()
+        internal void InitialPoll()
         {
             lock (sync)
             {
@@ -567,7 +572,7 @@ namespace OpenTK.Platform.BlackBerry
             }
         }
 
-        public void Poll()
+        internal void Poll()
         {
             lock (sync)
             {
@@ -630,6 +635,51 @@ namespace OpenTK.Platform.BlackBerry
                     }
                 }
             }
+        }
+
+        internal bool HandleDeviceConnection(IntPtr device, bool connected)
+        {
+            int type;
+            Screen.DeviceGetInt(device, Screen.SCREEN_PROPERTY_TYPE, out type);
+            if (type == Screen.SCREEN_EVENT_GAMEPAD || type == Screen.SCREEN_EVENT_JOYSTICK)
+            {
+                int index = -1;
+                lock (sync)
+                {
+                    if (type == Screen.SCREEN_EVENT_GAMEPAD)
+                    {
+                        if (connected)
+                        {
+                            index = AddGamePad(device);
+                        }
+                        else
+                        {
+                            IndexOfDevice(device, ref index, gamepads);
+                            if (index != -1)
+                            {
+                                gamepads.RemoveAt(index);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (connected)
+                        {
+                            index = AddJoystick(device);
+                        }
+                        else
+                        {
+                            IndexOfDevice(device, ref index, joysticks);
+                            if (index != -1)
+                            {
+                                joysticks.RemoveAt(index);
+                            }
+                        }
+                    }
+                }
+                return index != -1;
+            }
+            return false;
         }
 
         #endregion

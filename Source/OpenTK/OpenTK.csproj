@@ -170,7 +170,9 @@
     <Compile Include="Platform\BlackBerry\BlackBerryGamePadDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryGLNative.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryInputDriver.cs" />
+    <Compile Include="Platform\BlackBerry\BlackBerryKeyboardDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryKeyMap.cs" />
+    <Compile Include="Platform\BlackBerry\BlackBerryMouseDriver.cs" />
     <Compile Include="Platform\BlackBerry\BlackBerryWindowInfo.cs" />
     <Compile Include="Platform\DisplayDeviceBase.cs" />
     <Compile Include="Platform\Egl\EglUnixContext.cs" />

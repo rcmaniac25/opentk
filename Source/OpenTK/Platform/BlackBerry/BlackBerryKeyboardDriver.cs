@@ -163,6 +163,7 @@ namespace OpenTK.Platform.BlackBerry
                         }
                     }
                 }
+                return true;
             }
             return false;
         }

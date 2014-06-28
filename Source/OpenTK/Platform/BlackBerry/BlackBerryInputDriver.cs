@@ -89,6 +89,8 @@ namespace OpenTK.Platform.BlackBerry
 
         #endregion
 
+        #region Private members
+
         internal void HandleScreenEvents(IntPtr screenEvent)
         {
             int type;
@@ -123,8 +125,6 @@ namespace OpenTK.Platform.BlackBerry
                     break;
             }
         }
-
-        #region Private members
 
         private void InitPollTimer()
         {

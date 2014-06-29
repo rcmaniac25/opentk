@@ -27,6 +27,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 using OpenTK.Graphics;
 using OpenTK.Input;
@@ -45,6 +46,7 @@ namespace OpenTK
 
             #region Context
 
+            static int loggingInit = 0;
             static int contextUsage = 0;
             static int inputEventsRequested = 0;
 
@@ -94,6 +96,25 @@ namespace OpenTK
                 return true;
             }
 
+            public static void EnsureLoggingSetup()
+            {
+                if (Interlocked.CompareExchange(ref loggingInit, 2, 0) == 0)
+                {
+                    BufferSetConfig config = new BufferSetConfig();
+                    config.BufferSetName = "OpenTK.Buffer.System"; //XXX needs to be more unique
+                    config.BufferCount = 1;
+                    config.Verbosity = Slog2.SLOG2_DEBUG1;
+                    config.Configs = new BufferConfig[Slog2.SLOG2_MAX_BUFFERS];
+
+                    config.Configs[0].BufferName = "MainBuffer";
+                    config.Configs[0].PageCount = 9;
+
+                    IntPtr[] buffers = new IntPtr[1];
+                    Slog2.Register(ref config, buffers, 0);
+                    Slog2.SetDefaultBuffer(buffers[0]);
+                }
+            }
+
             #endregion
 
             public BlackBerryFactory()
@@ -102,6 +123,7 @@ namespace OpenTK
                 {
                     throw new ApplicationException("Could not initialize BPS");
                 }
+                Interlocked.CompareExchange(ref loggingInit, 1, 0);
                 if ((InitialContext = Screen.CreateContext()) == IntPtr.Zero)
                 {
                     BPS.Shutdown();
@@ -230,6 +252,7 @@ namespace OpenTK
                     InitialContext = IntPtr.Zero;
 
                     BPS.Shutdown();
+                    Interlocked.CompareExchange(ref loggingInit, 0, 1);
 
                     base.Dispose(manual);
                 }
@@ -267,6 +290,7 @@ namespace OpenTK
             {
                 builder.Insert(0, "    ", indent);
             }
+            Platform.BlackBerry.BlackBerryFactory.EnsureLoggingSetup();
             Platform.BlackBerry.Slog2.Log(IntPtr.Zero, CODE, level, builder.ToString());
             builder.Length = 0;
         }

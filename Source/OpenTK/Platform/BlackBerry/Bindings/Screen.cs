@@ -191,9 +191,7 @@ namespace OpenTK.Platform.BlackBerry
         public static extern int ContextGetInt(Context ctx, int pname, out int param);
 
         [DllImport(lib, EntryPoint = "screen_get_context_property_pv")]
-        public static extern int ContextGetIntPtr(Context ctx, int pname, [In, Out]ref IntPtr[] param);
-
-        //TODO
+        public static extern int ContextGetIntPtr(Context ctx, int pname, [In, Out]IntPtr[] param);
 
         #endregion
 
@@ -203,7 +201,7 @@ namespace OpenTK.Platform.BlackBerry
         public static extern int DeviceGetInt(Device dev, int pname, out int param);
 
         [DllImport(lib, EntryPoint = "screen_get_device_property_iv")]
-        public static extern int DeviceGetInts(Device dev, int pname, [In, Out]ref int[] param);
+        public static extern int DeviceGetInts(Device dev, int pname, [In, Out]int[] param);
 
         [DllImport(lib, EntryPoint = "screen_get_device_property_cv")]
         static extern int DeviceGetString(Device dev, int pname, int len, System.Text.StringBuilder param);
@@ -231,7 +229,7 @@ namespace OpenTK.Platform.BlackBerry
         public static extern int DisplayGetInt(Display disp, int pname, out int param);
 
         [DllImport(lib, EntryPoint = "screen_get_display_property_iv")]
-        public static extern int DisplayGetInts(Display disp, int pname, [In, Out]ref int[] param);
+        public static extern int DisplayGetInts(Display disp, int pname, [In, Out]int[] param);
 
         [DllImport(lib, EntryPoint = "screen_get_display_property_pv")]
         static extern int DisplayGetMode(Display disp, int pname, [In, Out]ref DisplayMode mode);
@@ -255,11 +253,11 @@ namespace OpenTK.Platform.BlackBerry
         // -----------------
 
         [DllImport(lib, EntryPoint = "screen_get_display_modes")]
-        static extern int GetDisplayModes(Display disp, int max, [In, Out] ref DisplayMode[] param);
+        static extern int GetDisplayModes(Display disp, int max, [In, Out] DisplayMode[] param);
 
-        public static bool GetDisplayModes(Display disp, ref DisplayMode[] param)
+        public static bool GetDisplayModes(Display disp, DisplayMode[] param)
         {
-            return GetDisplayModes(disp, param.Length, ref param) == SCREEN_SUCCESS;
+            return GetDisplayModes(disp, param.Length, param) == SCREEN_SUCCESS;
         }
 
         public static DisplayMode[] GetDisplayModes(Display disp)
@@ -270,7 +268,7 @@ namespace OpenTK.Platform.BlackBerry
                 return null;
             }
             DisplayMode[] modes = new DisplayMode[count];
-            if (GetDisplayModes(disp, count, ref modes) != SCREEN_SUCCESS)
+            if (GetDisplayModes(disp, count, modes) != SCREEN_SUCCESS)
             {
                 return null;
             }
@@ -342,7 +340,7 @@ namespace OpenTK.Platform.BlackBerry
         public static extern int WindowGetInt(Window win, int pname, out int param);
 
         [DllImport(lib, EntryPoint = "screen_get_window_property_iv")]
-        public static extern int WindowGetInts(Window win, int pname, [In, Out]ref int[] param);
+        public static extern int WindowGetInts(Window win, int pname, [In, Out]int[] param);
 
         // -----------------
 
@@ -379,7 +377,7 @@ namespace OpenTK.Platform.BlackBerry
         public static extern int EventGetInt(Event ev, int pname, out int param);
 
         [DllImport(lib, EntryPoint = "screen_get_event_property_iv")]
-        public static extern int EventGetInts(Event ev, int pname, [In, Out]ref int[] param);
+        public static extern int EventGetInts(Event ev, int pname, [In, Out]int[] param);
 
         [DllImport(lib, EntryPoint = "screen_get_event_property_pv")]
         public static extern int EventGetIntPtr(Event ev, int pname, out IntPtr param);

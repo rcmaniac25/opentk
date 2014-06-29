@@ -30,8 +30,27 @@ using System.Runtime.InteropServices;
 
 namespace OpenTK.Platform.BlackBerry
 {
+    using Buffer = IntPtr;
+
+    internal struct BufferSetConfig
+    {
+        public int BufferCount;
+        public string BufferSetName;
+        public byte Verbosity;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = Slog2.SLOG2_MAX_BUFFERS)]
+        public BufferConfig[] Configs;
+    }
+
+    internal struct BufferConfig
+    {
+        public string BufferName;
+        public int PageCount;
+    }
+
     internal class Slog2
     {
+        public const int SLOG2_MAX_BUFFERS = 4;
+
         public const int SLOG2_SUCCESS = 0;
         public const int SLOG2_FAILURE = -1;
 
@@ -40,5 +59,11 @@ namespace OpenTK.Platform.BlackBerry
 
         [DllImport("libslog2", EntryPoint = "slog2c")]
         public static extern int Log(IntPtr buffer, ushort code, byte severity, [MarshalAs(UnmanagedType.LPStr)]string data);
+
+        [DllImport("libslog2", EntryPoint = "slog2_register")]
+        public static extern int Register([In]ref BufferSetConfig config, [In, Out]Buffer[] handles, uint flags);
+
+        [DllImport("libslog2", EntryPoint = "slog2_set_default_buffer")]
+        public static extern Buffer SetDefaultBuffer(Buffer buffer);
     }
 }

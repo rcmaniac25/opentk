@@ -123,7 +123,5 @@ namespace OpenTK.Platform.BlackBerry
         public static extern IntPtr ScreenGetEvent(Event ev);
 
         #endregion
-
-        //TODO
     }
 }

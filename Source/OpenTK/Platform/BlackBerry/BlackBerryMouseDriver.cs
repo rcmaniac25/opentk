@@ -262,8 +262,8 @@ namespace OpenTK.Platform.BlackBerry
                 Screen.EventGetInt(ev, Screen.SCREEN_PROPERTY_BUTTONS, out buttons);
                 Screen.EventGetInt(ev, Screen.SCREEN_PROPERTY_MOUSE_WHEEL, out wheelV);
                 Screen.EventGetInt(ev, Screen.SCREEN_PROPERTY_MOUSE_HORIZONTAL_WHEEL, out wheelH);
-                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref rel);
-                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_POSITION, ref abs);
+                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_SOURCE_POSITION, rel);
+                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_POSITION, abs);
 
                 lock (sync)
                 {
@@ -287,8 +287,8 @@ namespace OpenTK.Platform.BlackBerry
                 int type;
                 Screen.EventGetInt(ev, Screen.SCREEN_PROPERTY_TOUCH_ID, out id);
                 Screen.EventGetInt(ev, Screen.SCREEN_PROPERTY_TYPE, out type);
-                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref rel);
-                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_POSITION, ref abs);
+                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_SOURCE_POSITION, rel);
+                Screen.EventGetInts(ev, Screen.SCREEN_PROPERTY_POSITION, abs);
 
                 lock (sync)
                 {

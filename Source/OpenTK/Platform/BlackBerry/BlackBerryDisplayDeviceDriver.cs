@@ -108,7 +108,7 @@ namespace OpenTK.Platform.BlackBerry
                 return null;
             }
             int[] formats = new int[formatCount];
-            if (Screen.DisplayGetInts(disp, Screen.SCREEN_PROPERTY_FORMATS, ref formats) != Screen.SCREEN_SUCCESS)
+            if (Screen.DisplayGetInts(disp, Screen.SCREEN_PROPERTY_FORMATS, formats) != Screen.SCREEN_SUCCESS)
             {
                 Debug.Print("Could not get display formats");
                 return null;
@@ -163,7 +163,7 @@ namespace OpenTK.Platform.BlackBerry
                 if (Screen.ContextGetInt(ctx, Screen.SCREEN_PROPERTY_DISPLAY_COUNT, out displayCount) == Screen.SCREEN_SUCCESS)
                 {
                     IntPtr[] displays = new IntPtr[displayCount];
-                    if (Screen.ContextGetIntPtr(ctx, Screen.SCREEN_PROPERTY_DISPLAYS, ref displays) == Screen.SCREEN_SUCCESS)
+                    if (Screen.ContextGetIntPtr(ctx, Screen.SCREEN_PROPERTY_DISPLAYS, displays) == Screen.SCREEN_SUCCESS)
                     {
                         List<DisplayDevice> avDisplays = new List<DisplayDevice>();
 

@@ -111,7 +111,7 @@ Requirements
 - To develop desktop applications: Visual Studio, Xamarin Studio, MonoDevelop or SharpDevelop
 - To develop Android applications: Xamarin Studio or the Xamarin Extensions for Visual Studio
 - To develop iOS applications: Xamarin Studio and XCode
-- To develop BlackBerry applications: [MonoBerry](https://github.com/roblillack/monoberry) and probably [DotBlackBerry](https://github.com/rcmaniac25/DotBlackBerry)
+- To develop BlackBerry applications: [MonoBerry](https://github.com/roblillack/monoberry) and to follow the usage instructions in the readme from [DotBlackBerry](https://github.com/rcmaniac25/DotBlackBerry)
 
 
 Documentation

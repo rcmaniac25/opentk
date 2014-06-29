@@ -415,7 +415,7 @@ namespace OpenTK.Platform.BlackBerry
                             int[] position = new int[2];
                             int[] wheel = new int[2];
                             Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_BUTTONS, out value);
-                            Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                            Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, position);
                             Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_MOUSE_HORIZONTAL_WHEEL, out wheel[0]);
                             Screen.EventGetInt(screenEvent, Screen.SCREEN_PROPERTY_MOUSE_WHEEL, out wheel[1]);
 
@@ -466,7 +466,7 @@ namespace OpenTK.Platform.BlackBerry
                                 OnMouseEnter(EventArgs.Empty);
 
                                 position = new int[2];
-                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, position);
                                 if (MouseState.X != position[0] || MouseState.Y != position[1])
                                 {
                                     OnMouseMove(position[0], position[1]);
@@ -480,7 +480,7 @@ namespace OpenTK.Platform.BlackBerry
                             if (id == 0)
                             {
                                 position = new int[2];
-                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, position);
                                 if (MouseState.X != position[0] || MouseState.Y != position[1])
                                 {
                                     OnMouseMove(position[0], position[1]);
@@ -493,7 +493,7 @@ namespace OpenTK.Platform.BlackBerry
                             if (id == 0)
                             {
                                 position = new int[2];
-                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, ref position);
+                                Screen.EventGetInts(screenEvent, Screen.SCREEN_PROPERTY_SOURCE_POSITION, position);
                                 if (MouseState.X != position[0] || MouseState.Y != position[1])
                                 {
                                     OnMouseMove(position[0], position[1]);

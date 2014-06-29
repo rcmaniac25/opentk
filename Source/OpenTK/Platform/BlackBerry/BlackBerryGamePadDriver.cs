@@ -521,11 +521,11 @@ namespace OpenTK.Platform.BlackBerry
             int buttons;
             Screen.DeviceGetInt(gamepad, Screen.SCREEN_PROPERTY_BUTTONS, out buttons);
             device.Buttons = (GamepadButtons)buttons;
-            if (Screen.DeviceGetInts(gamepad, Screen.SCREEN_PROPERTY_ANALOG0, ref device.Analog0) == Screen.SCREEN_SUCCESS && updateAnalogCount)
+            if (Screen.DeviceGetInts(gamepad, Screen.SCREEN_PROPERTY_ANALOG0, device.Analog0) == Screen.SCREEN_SUCCESS && updateAnalogCount)
             {
                 device.AnalogCount++;
             }
-            if (Screen.DeviceGetInts(gamepad, Screen.SCREEN_PROPERTY_ANALOG1, ref device.Analog1) == Screen.SCREEN_SUCCESS && updateAnalogCount)
+            if (Screen.DeviceGetInts(gamepad, Screen.SCREEN_PROPERTY_ANALOG1, device.Analog1) == Screen.SCREEN_SUCCESS && updateAnalogCount)
             {
                 device.AnalogCount++;
             }
@@ -550,7 +550,7 @@ namespace OpenTK.Platform.BlackBerry
                 int count;
                 Screen.ContextGetInt(BlackBerryFactory.InitialContext, Screen.SCREEN_PROPERTY_DEVICE_COUNT, out count);
                 IntPtr[] devices = new IntPtr[count];
-                Screen.ContextGetIntPtr(BlackBerryFactory.InitialContext, Screen.SCREEN_PROPERTY_DEVICES, ref devices);
+                Screen.ContextGetIntPtr(BlackBerryFactory.InitialContext, Screen.SCREEN_PROPERTY_DEVICES, devices);
 
                 packet_id = 0;
                 gamepads.Clear();
@@ -579,7 +579,7 @@ namespace OpenTK.Platform.BlackBerry
                 int count;
                 Screen.ContextGetInt(BlackBerryFactory.InitialContext, Screen.SCREEN_PROPERTY_DEVICE_COUNT, out count);
                 IntPtr[] devices = new IntPtr[count];
-                Screen.ContextGetIntPtr(BlackBerryFactory.InitialContext, Screen.SCREEN_PROPERTY_DEVICES, ref devices);
+                Screen.ContextGetIntPtr(BlackBerryFactory.InitialContext, Screen.SCREEN_PROPERTY_DEVICES, devices);
 
                 packet_id++;
                 List<int> processedGamepads = new List<int>(gamepads.Count);

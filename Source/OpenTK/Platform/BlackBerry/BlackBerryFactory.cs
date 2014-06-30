@@ -47,6 +47,7 @@ namespace OpenTK
             #region Context
 
             static int loggingInit = 0;
+            internal static IntPtr LoggingBuffer = IntPtr.Zero;
             static int contextUsage = 0;
             static int inputEventsRequested = 0;
 
@@ -106,12 +107,13 @@ namespace OpenTK
                     config.Verbosity = Slog2.SLOG2_DEBUG1;
                     config.Configs = new BufferConfig[Slog2.SLOG2_MAX_BUFFERS];
 
-                    config.Configs[0].BufferName = "MainBuffer";
+                    config.Configs[0].BufferName = "OpenTK";
                     config.Configs[0].PageCount = 9;
 
                     IntPtr[] buffers = new IntPtr[1];
                     Slog2.Register(ref config, buffers, 0);
-                    Slog2.SetDefaultBuffer(buffers[0]);
+                    //Slog2.SetDefaultBuffer(buffers[0]);
+                    LoggingBuffer = buffers[0];
                 }
             }
 
@@ -290,8 +292,11 @@ namespace OpenTK
             {
                 builder.Insert(0, "    ", indent);
             }
-            Platform.BlackBerry.BlackBerryFactory.EnsureLoggingSetup();
-            Platform.BlackBerry.Slog2.Log(IntPtr.Zero, CODE, level, builder.ToString());
+            if (Configuration.RunningOnBlackBerry)
+            {
+                Platform.BlackBerry.BlackBerryFactory.EnsureLoggingSetup();
+                Platform.BlackBerry.Slog2.Log(Platform.BlackBerry.BlackBerryFactory.LoggingBuffer, CODE, level, builder.ToString());
+            }
             builder.Length = 0;
         }
 

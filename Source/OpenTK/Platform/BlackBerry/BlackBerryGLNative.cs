@@ -114,7 +114,11 @@ namespace OpenTK.Platform.BlackBerry
             {
                 if (!Screen.WindowSetIntPtr(windowHandle, Screen.SCREEN_PROPERTY_DISPLAY, (IntPtr)device.Id))
                 {
-                    Debug.Print("Window display could not be changed from default");
+                    IntPtr curDisplay;
+                    if (Screen.WindowGetIntPtr(windowHandle, Screen.SCREEN_PROPERTY_DISPLAY, out curDisplay) != Screen.SCREEN_SUCCESS || !device.Id.Equals(curDisplay))
+                    {
+                        Debug.Print("Window display could not be changed from default");
+                    }
                 }
             }
             if (Screen.WindowCreateBuffers(windowHandle, mode.Buffers) != Screen.SCREEN_SUCCESS)
@@ -169,17 +173,18 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Get Icon is not implemented");
+                return null;
             }
             set
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Set Icon is not implemented");
             }
         }
 
         public override string Title
         {
-            //XXX Doesn't change app title...
+            //XXX Doesn't actually change app title...
             get
             {
                 return Screen.WindowGetString(window.Handle, Screen.SCREEN_PROPERTY_ID_STRING);
@@ -210,7 +215,7 @@ namespace OpenTK.Platform.BlackBerry
             set
             {
                 // If this was Cascades, then we could at least thumbnail it. But that doesn't make it invisible.
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Set Visible is not implemented");
             }
         }
 
@@ -235,7 +240,7 @@ namespace OpenTK.Platform.BlackBerry
             }
             set
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Set WindowState is not implemented");
             }
         }
 
@@ -248,7 +253,7 @@ namespace OpenTK.Platform.BlackBerry
             }
             set
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Set WindowBorder is not implemented");
             }
         }
 
@@ -326,7 +331,7 @@ namespace OpenTK.Platform.BlackBerry
             }
             set
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Set CursorVisible is not implemented");
             }
         }
 
@@ -334,11 +339,12 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Get Cursor is not implemented");
+                return MouseCursor.Empty;
             }
             set
             {
-                throw new NotImplementedException();
+                Debug.Print("BlackBerry: Set Cursor is not implemented");
             }
         }
 

@@ -360,6 +360,11 @@ namespace OpenTK.Platform.BlackBerry
         #region IntPtr
 
         [DllImport(lib, EntryPoint = "screen_get_display_property_pv")]
+        public static extern int WindowGetIntPtr(Window win, int pname, out IntPtr param);
+
+        // -----------------
+
+        [DllImport(lib, EntryPoint = "screen_set_display_property_pv")]
         static extern int WindowSetIntPtr(Window win, int pname, [In] ref IntPtr param);
 
         public static bool WindowSetIntPtr(Window win, int pname, IntPtr param)

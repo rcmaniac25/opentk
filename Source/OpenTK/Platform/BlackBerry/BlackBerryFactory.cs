@@ -77,7 +77,7 @@ namespace OpenTK
 
             public static bool RequestScreenEvents()
             {
-                if ((inputEventsRequested++) == 1)
+                if ((inputEventsRequested++) == 0)
                 {
                     return BPS.ScreenRequestEvents(InitialContext) == BPS.BPS_SUCCESS;
                 }
@@ -102,13 +102,17 @@ namespace OpenTK
                 if (Interlocked.CompareExchange(ref loggingInit, 2, 0) == 0)
                 {
                     BufferSetConfig config = new BufferSetConfig();
-                    config.BufferSetName = "OpenTK.Buffer.System"; //XXX needs to be more unique
+
+                    // Get application name for use as buffer name (which is what happens by default)
+                    var name = new Uri("file://" + System.Reflection.Assembly.GetEntryAssembly().Location).Segments[2];
+                    config.BufferSetName = name.Substring(0, name.Length - 1);
+
                     config.BufferCount = 1;
                     config.Verbosity = Slog2.SLOG2_DEBUG1;
                     config.Configs = new BufferConfig[Slog2.SLOG2_MAX_BUFFERS];
 
                     config.Configs[0].BufferName = "OpenTK";
-                    config.Configs[0].PageCount = 9;
+                    config.Configs[0].PageCount = 4;
 
                     IntPtr[] buffers = new IntPtr[1];
                     Slog2.Register(ref config, buffers, 0);
@@ -192,7 +196,7 @@ namespace OpenTK
 
             #endregion
 
-            #region Input
+            #region Internal methods
 
             IInputDriver2 InputDriver
             {
@@ -210,6 +214,7 @@ namespace OpenTK
             {
                 if (contextUsage > 0)
                 {
+                    //XXX If screen event, save until handled. If handled, retrieve next event.
                     IntPtr ev = IntPtr.Zero;
                     if (BPS.GetEvent(out ev, 1) == BPS.BPS_SUCCESS && ev != IntPtr.Zero && 
                         inputEventsRequested > 0 && inputDriver != null)
@@ -244,11 +249,13 @@ namespace OpenTK
                     {
                         BPS.ScreenStopEvents(InitialContext);
                     }
+                    inputEventsRequested = 0;
 
                     if (contextUsage > 0)
                     {
                         Debug.Print("Context is still in use");
                     }
+                    contextUsage = 0;
 
                     Screen.DestroyContext(InitialContext);
                     InitialContext = IntPtr.Zero;

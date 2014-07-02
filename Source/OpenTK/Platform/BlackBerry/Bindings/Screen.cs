@@ -132,6 +132,7 @@ namespace OpenTK.Platform.BlackBerry
         public const int SCREEN_PROPERTY_TYPE = 47;
         public const int SCREEN_PROPERTY_USAGE = 48;
         public const int SCREEN_PROPERTY_VISIBLE = 51;
+        public const int SCREEN_PROPERTY_WINDOW = 52;
         public const int SCREEN_PROPERTY_DISPLAY_COUNT = 59;
         public const int SCREEN_PROPERTY_DISPLAYS = 60;
         public const int SCREEN_PROPERTY_ATTACHED = 64;

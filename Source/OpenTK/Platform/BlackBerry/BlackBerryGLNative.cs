@@ -131,7 +131,7 @@ namespace OpenTK.Platform.BlackBerry
             }
 
             // Startup events
-            if (!BPS.NavigatorRequestEvents())
+            if (!BPS.NavigatorRequestEvents(true))
             {
                 Debug.Print("Could not start navigator events");
             }
@@ -179,12 +179,15 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                Debug.Print("BlackBerry: Get Icon is not implemented");
+                //Debug.Print("BlackBerry: Get Icon is not implemented");
                 return null;
             }
             set
             {
-                Debug.Print("BlackBerry: Set Icon is not implemented");
+                if (value != null)
+                {
+                    Debug.Print("BlackBerry: Set Icon is not implemented");
+                }
             }
         }
 
@@ -220,8 +223,10 @@ namespace OpenTK.Platform.BlackBerry
             }
             set
             {
-                // If this was Cascades, then we could at least thumbnail it. But that doesn't make it invisible.
-                Debug.Print("BlackBerry: Set Visible is not implemented");
+                if (value != Visible)
+                {
+                    Debug.Print("BlackBerry: Set Visible is not implemented");
+                }
             }
         }
 
@@ -242,11 +247,29 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
+                // This isn't really correct. Fullscreen and minimized are fine, but "normal" is NOT a BB ActiveFrame (think, Windows Live Tile)
                 return visible ? focused ? WindowState.Fullscreen : WindowState.Normal : WindowState.Minimized;
             }
             set
             {
-                Debug.Print("BlackBerry: Set WindowState is not implemented");
+                if (value != WindowState)
+                {
+                    if (value == WindowState.Normal)
+                    {
+                        PPSEncoder encoder = new PPSEncoder();
+                        PPS.EncoderInitialize(ref encoder, false);
+                        PPS.EncoderAddString(ref encoder, "msg", "minimizeWindow");
+                        if (BPS.RawWrite(PPS.EncoderBuffer(ref encoder), (uint)PPS.EncoderLength(ref encoder)) != BPS.BPS_SUCCESS)
+                        {
+                            Debug.Print("BlackBerry: RawWrite failed to change window state");
+                        }
+                        PPS.EncoderCleanup(ref encoder);
+                    }
+                    else
+                    {
+                        Debug.Print("BlackBerry: Set WindowState is not implemented");
+                    }
+                }
             }
         }
 
@@ -259,7 +282,10 @@ namespace OpenTK.Platform.BlackBerry
             }
             set
             {
-                Debug.Print("BlackBerry: Set WindowBorder is not implemented");
+                if (value != OpenTK.WindowBorder.Hidden)
+                {
+                    Debug.Print("BlackBerry: Set WindowBorder is not implemented");
+                }
             }
         }
 
@@ -337,7 +363,10 @@ namespace OpenTK.Platform.BlackBerry
             }
             set
             {
-                Debug.Print("BlackBerry: Set CursorVisible is not implemented");
+                if (value)
+                {
+                    Debug.Print("BlackBerry: Set CursorVisible is not implemented");
+                }
             }
         }
 
@@ -345,12 +374,15 @@ namespace OpenTK.Platform.BlackBerry
         {
             get
             {
-                Debug.Print("BlackBerry: Get Cursor is not implemented");
+                //Debug.Print("BlackBerry: Get Cursor is not implemented");
                 return MouseCursor.Empty;
             }
             set
             {
-                Debug.Print("BlackBerry: Set Cursor is not implemented");
+                if (value != MouseCursor.Empty)
+                {
+                    Debug.Print("BlackBerry: Set Cursor is not implemented");
+                }
             }
         }
 

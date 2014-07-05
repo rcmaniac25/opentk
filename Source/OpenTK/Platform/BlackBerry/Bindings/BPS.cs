@@ -71,6 +71,8 @@ namespace OpenTK.Platform.BlackBerry
 
         #region --- Navigator ---
 
+        private const int NAVIGATOR_EXTENDED_DATA = 0x01;
+
         public const int NAVIGATOR_EXIT = 0x02;
         public const int NAVIGATOR_WINDOW_STATE = 0x03;
         public const int NAVIGATOR_WINDOW_ACTIVE = 0x0a;
@@ -79,9 +81,9 @@ namespace OpenTK.Platform.BlackBerry
         [DllImport(lib, EntryPoint = "navigator_request_events")]
         static extern int NavigatorRequestEvents(int flags);
 
-        public static bool NavigatorRequestEvents()
+        public static bool NavigatorRequestEvents(bool extendedData)
         {
-            return NavigatorRequestEvents(0) == BPS_SUCCESS;
+            return NavigatorRequestEvents(extendedData ? NAVIGATOR_EXTENDED_DATA : 0) == BPS_SUCCESS;
         }
 
         [DllImport(lib, EntryPoint = "navigator_stop_events")]
@@ -104,7 +106,8 @@ namespace OpenTK.Platform.BlackBerry
         [DllImport(lib, EntryPoint = "navigator_event_get_window_state")]
         public static extern NavigatorWindowState NavigatorEventWindowState(Event ev);
 
-        //TODO
+        [DllImport(lib, EntryPoint = "navigator_raw_write")]
+        public static extern int RawWrite(IntPtr data, uint length);
 
         #endregion
 
